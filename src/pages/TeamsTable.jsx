@@ -1,12 +1,12 @@
 import { useState, useRef } from 'react';
 import useAppStore from '../store';
-import { ArrowLeft, FileText, Pencil, Save, ArrowRightLeft, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ArrowLeft, FileText, Pencil, Save, ArrowRightLeft, ChevronLeft, ChevronRight, Crown } from 'lucide-react';
 import { generatePDF } from '../utils/pdfGenerator';
 import { recalculateTeamStats } from '../utils/tournamentMaker';
 import { DndContext, useDraggable, useDroppable, closestCenter, PointerSensor, useSensor, useSensors, DragOverlay } from '@dnd-kit/core';
 
 // Draggable Player Row
-function DraggableRow({ player, id, isEditMode, onSwapClick, teamId, origin, idx, isBeingDragged }) {
+function DraggableRow({ player, id, isEditMode, onSwapClick, onCaptainClick, teamId, origin, idx, isBeingDragged, isCaptain }) {
     const { attributes, listeners, setNodeRef, transform } = useDraggable({
         id: id,
         data: { player, teamId, origin, idx },
@@ -21,9 +21,9 @@ function DraggableRow({ player, id, isEditMode, onSwapClick, teamId, origin, idx
     if (isBeingDragged) {
         return (
             <DroppableRow id={id} isEditMode={isEditMode}>
-                <tr className="border-t border-dashed border-emerald-500 bg-emerald-900/20 h-10">
-                    <td colSpan={isEditMode ? 3 : 2} className="text-center text-emerald-400 text-xs">
-                        Arrastrando este jugador...
+                <tr className="border-t border-dashed border-emerald-500/50 bg-emerald-500/10 h-10">
+                    <td colSpan={isEditMode ? 4 : 2} className="text-center text-emerald-400 text-xs font-medium animate-pulse">
+                        Moviendo...
                     </td>
                 </tr>
             </DroppableRow>
@@ -36,33 +36,65 @@ function DraggableRow({ player, id, isEditMode, onSwapClick, teamId, origin, idx
                 ref={setNodeRef}
                 {...(isEditMode && !player.vacante ? listeners : {})}
                 {...attributes}
-                className={`border-t border-slate-800 transition-colors
-                    ${isDT ? 'bg-indigo-950/50' : ''}
-                    ${player.vacante ? 'bg-red-900/20' : ''}
-                    ${!isStarter ? 'hover:bg-slate-800/30' : ''}
-                    ${isEditMode && !player.vacante ? 'cursor-grab active:cursor-grabbing hover:bg-slate-800' : ''}
+                className={`border-t border-white/5 transition-all
+                    ${isDT ? 'bg-indigo-500/10' : ''}
+                    ${player.vacante ? 'bg-red-500/10' : ''}
+                    ${isCaptain ? 'bg-amber-500/10' : ''}
+                    ${!isStarter ? 'hover:bg-white/5' : 'hover:bg-white/5'}
+                    ${isEditMode && !player.vacante ? 'cursor-grab active:cursor-grabbing hover:bg-white/10' : ''}
                 `}
             >
-                <td className={`py-2 px-2 font-bold 
-                    ${isDT ? 'text-indigo-400' : isARQ ? 'text-yellow-500' : isStarter ? 'text-slate-400' : 'text-slate-500'}`}>
-                    {isStarter ? player.role : (player.position || player.role)}
+                <td className="py-2.5 px-3 w-[50px]">
+                    <div className="flex items-center gap-1">
+                        {isCaptain && (
+                            <Crown size={12} className="text-amber-400 flex-shrink-0" />
+                        )}
+                        <span className={`inline-flex items-center justify-center h-6 w-11 rounded-md text-[10px] font-bold tracking-wider shadow-sm
+                            ${isDT ? 'bg-indigo-500/20 text-indigo-300' :
+                                isARQ ? 'bg-yellow-500/20 text-yellow-300' :
+                                    isCaptain ? 'bg-amber-500/20 text-amber-300' :
+                                        isStarter ? 'bg-slate-500/20 text-slate-300' : 'bg-slate-600/20 text-slate-400'}
+                         `}>
+                            {isStarter ? player.role : (player.position || player.role)}
+                        </span>
+                    </div>
                 </td>
-                <td className={`py-2 px-2 ${isStarter ? 'text-white' : 'text-slate-300'}`}>
-                    {player.vacante ? (
-                        <span className="text-red-400 italic">{isDT ? 'Falta DT' : 'Vacante'}</span>
-                    ) : player.name}
+                <td className={`py-2.5 px-3 font-medium text-xs sm:text-sm leading-tight ${isStarter ? 'text-white' : 'text-slate-300'}`}>
+                    <span className="flex items-center gap-1.5">
+                        {player.vacante ? (
+                            <span className="text-red-400/80 italic text-xs font-normal">{isDT ? 'Falta DT' : 'Vacante'}</span>
+                        ) : (
+                            <>
+                                {player.name}
+                                {isCaptain && <span className="text-[9px] text-amber-400 font-bold">(C)</span>}
+                            </>
+                        )}
+                    </span>
                 </td>
                 {isEditMode && (
-                    <td className="py-2 px-2">
-                        {!player.vacante && (
-                            <button
-                                onClick={(e) => { e.stopPropagation(); onSwapClick(); }}
-                                className="text-slate-500 hover:text-emerald-400 transition"
-                                title="Mover a otro equipo"
-                            >
-                                <ArrowRightLeft size={14} />
-                            </button>
-                        )}
+                    <td className="py-2.5 px-1 text-right w-16">
+                        <div className="flex items-center justify-end gap-0.5">
+                            {!player.vacante && !isDT && (
+                                <button
+                                    onClick={(e) => { e.stopPropagation(); onCaptainClick(); }}
+                                    className={`p-1.5 rounded-lg transition ${isCaptain
+                                        ? 'text-amber-400 bg-amber-500/20'
+                                        : 'text-slate-500 hover:text-amber-400 hover:bg-amber-500/10'}`}
+                                    title={isCaptain ? 'Quitar capitán' : 'Hacer capitán'}
+                                >
+                                    <Crown size={14} />
+                                </button>
+                            )}
+                            {!player.vacante && (
+                                <button
+                                    onClick={(e) => { e.stopPropagation(); onSwapClick(); }}
+                                    className="p-1.5 text-slate-500 hover:text-emerald-400 hover:bg-emerald-500/10 rounded-lg transition"
+                                    title="Mover a otro equipo"
+                                >
+                                    <ArrowRightLeft size={14} />
+                                </button>
+                            )}
+                        </div>
                     </td>
                 )}
             </tr>
@@ -78,7 +110,7 @@ function DroppableRow({ id, isEditMode, children }) {
     });
 
     return (
-        <tbody ref={setNodeRef} className={isOver && isEditMode ? 'bg-emerald-900/40' : ''}>
+        <tbody ref={setNodeRef} className={`transition-colors ${isOver && isEditMode ? 'bg-emerald-500/10' : ''}`}>
             {children}
         </tbody>
     );
@@ -94,8 +126,11 @@ function DroppableTeamCard({ team, children, isEditMode }) {
     return (
         <div
             ref={setNodeRef}
-            className={`flex-shrink-0 w-64 sm:w-72 bg-slate-900 rounded-lg sm:rounded-xl border shadow-xl overflow-hidden transition-all
-                ${isOver && isEditMode ? 'border-emerald-500 ring-2 ring-emerald-500/50 scale-[1.02]' : 'border-slate-800'}
+            className={`flex-shrink-0 w-80 backdrop-blur-xl rounded-2xl border shadow-xl overflow-hidden transition-all duration-300 flex flex-col
+                ${isOver && isEditMode
+                    ? 'border-emerald-500/50 bg-emerald-500/5 ring-1 ring-emerald-500/30 scale-[1.01]'
+                    : 'bg-white/5 border-white/10 hover:border-white/20 hover:bg-white/10'
+                }
             `}
         >
             {children}
@@ -118,10 +153,10 @@ export default function TeamsTable() {
     const scrollContainerRef = useRef(null);
 
     const scrollLeft = () => {
-        scrollContainerRef.current?.scrollBy({ left: -300, behavior: 'smooth' });
+        scrollContainerRef.current?.scrollBy({ left: -340, behavior: 'smooth' });
     };
     const scrollRight = () => {
-        scrollContainerRef.current?.scrollBy({ left: 300, behavior: 'smooth' });
+        scrollContainerRef.current?.scrollBy({ left: 340, behavior: 'smooth' });
     };
 
     const sensors = useSensors(
@@ -130,9 +165,9 @@ export default function TeamsTable() {
 
     if (!tournamentTeams || tournamentTeams.length === 0) {
         return (
-            <div className="flex flex-col items-center justify-center min-h-screen p-4">
+            <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-slate-950">
                 <p className="text-slate-400">No hay equipos generados.</p>
-                <button onClick={() => navigate('home')} className="mt-4 text-emerald-500 hover:underline">Volver al inicio</button>
+                <button onClick={() => navigate('home')} className="mt-4 text-emerald-400 hover:text-emerald-300 font-medium">Volver al inicio</button>
             </div>
         );
     }
@@ -322,6 +357,40 @@ export default function TeamsTable() {
         setSwapModal(null);
     };
 
+    // Handle captain selection
+    const handleCaptainToggle = (teamId, playerId, origin, idx) => {
+        const newTeams = JSON.parse(JSON.stringify(tournamentTeams));
+        const team = newTeams.find(t => t.id === teamId);
+
+        if (!team) return;
+
+        // Clear existing captain in this team
+        team.starters.forEach(p => p.isCaptain = false);
+        team.bench.forEach(p => p.isCaptain = false);
+
+        // Get the player and toggle captain status
+        const playerList = origin === 'starter' ? team.starters : team.bench;
+        const player = playerList[idx];
+
+        // Only set captain if the player wasn't already captain
+        if (!player.isCaptain) {
+            player.isCaptain = true;
+        }
+
+        setTournamentTeams(newTeams);
+    };
+
+    // Handle team name change
+    const handleTeamNameChange = (teamId, newName) => {
+        const newTeams = JSON.parse(JSON.stringify(tournamentTeams));
+        const team = newTeams.find(t => t.id === teamId);
+
+        if (!team) return;
+
+        team.name = newName;
+        setTournamentTeams(newTeams);
+    };
+
     return (
         <DndContext
             sensors={sensors}
@@ -329,117 +398,156 @@ export default function TeamsTable() {
             onDragStart={handleDragStart}
             onDragEnd={handleDragEnd}
         >
-            <div className="min-h-screen bg-slate-950 flex flex-col">
+            <div className="h-screen bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-900 via-[#0a0a0a] to-black flex flex-col font-sans antialiased text-slate-200 overflow-hidden">
                 {/* Header */}
-                <div className="p-3 sm:p-4 md:p-6 border-b border-slate-800 bg-slate-950 sticky top-0 z-30">
+                <div className="shrink-0 px-6 py-4 border-b border-white/5 bg-slate-950/50 backdrop-blur-xl z-30 shadow-lg flex items-center justify-between">
                     {/* Tournament Info */}
-                    <div className="text-center mb-3 sm:mb-4">
-                        <h1 className="text-lg sm:text-xl md:text-2xl font-black text-white uppercase tracking-tight">{tournamentName || 'Torneo'}</h1>
-                        {tournamentStartDate && tournamentEndDate && (
-                            <p className="text-slate-400 text-xs mt-0.5">
-                                {formatDate(tournamentStartDate)} — {formatDate(tournamentEndDate)}
-                            </p>
-                        )}
+                    <div className="flex items-center gap-6">
+                        <button
+                            onClick={() => navigate('tournament')}
+                            className="group flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-emerald-500/10 text-slate-400 hover:text-emerald-400 rounded-xl transition-all border border-white/5 hover:border-emerald-500/20"
+                            title="Volver a la cancha"
+                        >
+                            <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" />
+                            <span className="text-sm font-bold tracking-wide">TABLERO</span>
+                        </button>
+
+                        <div className="flex flex-col">
+                            <h1 className="text-xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white to-slate-400 uppercase tracking-tighter leading-none">{tournamentName || 'Torneo'}</h1>
+                            {(tournamentStartDate && tournamentEndDate) && (
+                                <span className="text-[10px] font-bold text-slate-500 tracking-wide mt-1">
+                                    {formatDate(tournamentStartDate)} - {formatDate(tournamentEndDate)}
+                                </span>
+                            )}
+                        </div>
                     </div>
 
                     {/* Controls */}
-                    <div className="flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4 bg-slate-900 p-3 rounded-lg border border-slate-800">
-                        <button
-                            onClick={() => navigate('tournament')}
-                            className="flex items-center gap-2 text-slate-400 hover:text-white transition self-start sm:self-auto"
-                        >
-                            <ArrowLeft size={18} className="sm:w-5 sm:h-5" /> <span className="text-sm sm:text-base">Vista Cancha</span>
-                        </button>
-                        <span className="text-slate-500 text-xs sm:text-sm hidden sm:block">{tournamentTeams.length} equipos</span>
-                        <div className="flex gap-2 w-full sm:w-auto">
-                            <button
-                                onClick={() => setIsEditMode(!isEditMode)}
-                                className={`flex-1 sm:flex-none flex items-center justify-center gap-1 sm:gap-2 px-3 sm:px-4 py-2 rounded-lg transition border text-sm ${isEditMode ? 'bg-emerald-600 border-emerald-500 text-white' : 'bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-700'}`}
-                            >
-                                {isEditMode ? <Save size={16} /> : <Pencil size={16} />}
-                                <span>{isEditMode ? 'Guardar' : 'Editar'}</span>
-                            </button>
-                            <button
-                                onClick={() => generatePDF(tournamentTeams)}
-                                className="flex-1 sm:flex-none flex items-center justify-center gap-1 sm:gap-2 px-3 sm:px-4 py-2 bg-red-600/20 text-red-400 rounded-lg hover:bg-red-600 hover:text-white transition border border-red-600/50 text-sm"
-                            >
-                                <FileText size={16} /> PDF
-                            </button>
+                    <div className="flex items-center gap-3">
+                        <div className="hidden sm:flex items-center px-4 py-1.5 rounded-full bg-black/40 border border-white/5">
+                            <span className="text-slate-400 text-[10px] font-bold uppercase tracking-wider">{tournamentTeams.length} Equipos</span>
                         </div>
+
+                        <button
+                            onClick={() => setIsEditMode(!isEditMode)}
+                            className={`flex items-center justify-center gap-2 px-4 py-2 rounded-xl transition-all border text-xs font-bold uppercase tracking-wider shadow-lg
+                                ${isEditMode
+                                    ? 'bg-emerald-500 border-emerald-400 text-slate-950 shadow-emerald-900/40 hover:bg-emerald-400'
+                                    : 'bg-white/5 border-white/5 text-slate-400 hover:bg-white/10 hover:text-white hover:border-white/10'
+                                }`}
+                        >
+                            {isEditMode ? <Save size={16} /> : <Pencil size={16} />}
+                            <span>{isEditMode ? 'Guardar' : 'Editar'}</span>
+                        </button>
+                        <button
+                            onClick={() => generatePDF(tournamentTeams, tournamentName)}
+                            className="flex items-center justify-center gap-2 px-4 py-2 bg-rose-500/10 text-rose-400 rounded-xl hover:bg-rose-500 hover:text-white transition-all border border-rose-500/20 hover:border-rose-500 text-xs font-bold uppercase tracking-wider"
+                        >
+                            <FileText size={16} /> PDF
+                        </button>
                     </div>
-                    {isEditMode && (
-                        <p className="text-center text-emerald-400 text-xs sm:text-sm mt-2 sm:mt-3 animate-pulse">
-                            Arrastra jugadores para intercambiar posiciones
-                        </p>
-                    )}
                 </div>
 
+                {isEditMode && (
+                    <div className="shrink-0 bg-emerald-500/10 border-b border-emerald-500/10 py-1.5 text-center relative z-20">
+                        <p className="text-emerald-400 text-[10px] font-bold uppercase tracking-[0.2em] animate-pulse">
+                            Modo Edición Activado
+                        </p>
+                    </div>
+                )}
+
                 {/* Teams Container */}
-                <div className="flex-1 p-3 sm:p-4 md:p-6 overflow-hidden">
+                <div className="flex-1 p-4 md:p-8 overflow-hidden flex flex-col items-center relative z-10">
                     <div
                         ref={scrollContainerRef}
-                        className="h-full overflow-x-scroll overflow-y-auto pb-2"
-                        style={{
-                            scrollbarWidth: 'thin',
-                            scrollbarColor: '#10b981 #334155'
-                        }}
+                        className="w-full h-full overflow-x-scroll overflow-y-hidden pb-4 custom-scrollbar scroll-smooth"
                     >
-                        <div className="flex gap-3 sm:gap-4 pb-4 min-w-max">
+                        <div className="flex gap-6 pb-2 min-w-max px-2 h-full">
                             {tournamentTeams.map((team) => (
                                 <DroppableTeamCard key={team.id} team={team} isEditMode={isEditMode}>
-                                    <div className="bg-emerald-600 p-2 sm:p-3 text-center">
-                                        <h2 className="text-base sm:text-lg font-black text-white uppercase tracking-wide">{team.name}</h2>
-                                        <p className="text-[10px] sm:text-xs text-emerald-200 mt-0.5 sm:mt-1">
-                                            Jugadores: {team.starters.filter(p => !p.vacante).length + team.bench.length}
-                                        </p>
+                                    {/* Glass Header */}
+                                    <div className="bg-white/5 px-4 py-3 border-b border-white/5 backdrop-blur-md relative overflow-hidden group">
+                                        <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-emerald-500/10 to-transparent blur-xl rounded-full -translate-y-1/2 translate-x-1/2 group-hover:bg-emerald-500/20 transition-all duration-500"></div>
+
+                                        <div className="flex items-center justify-between relative z-10">
+                                            {isEditMode ? (
+                                                <input
+                                                    type="text"
+                                                    value={team.name}
+                                                    onChange={(e) => handleTeamNameChange(team.id, e.target.value)}
+                                                    className="text-sm sm:text-base font-black text-white uppercase tracking-tight bg-white/10 border border-white/20 rounded-lg px-2 py-1 max-w-[160px] focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/30"
+                                                    onClick={(e) => e.stopPropagation()}
+                                                />
+                                            ) : (
+                                                <h2 className="text-sm sm:text-base font-black text-white uppercase tracking-tight truncate max-w-[160px]" title={team.name}>{team.name}</h2>
+                                            )}
+                                            <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-black/30 border border-white/5">
+                                                <span className="w-1 h-1 rounded-full bg-emerald-500"></span>
+                                                <span className="text-[9px] uppercase font-bold text-slate-400">
+                                                    {team.starters.filter(p => !p.vacante).length + team.bench.length}
+                                                </span>
+                                            </div>
+                                        </div>
                                     </div>
 
-                                    <div className="p-1.5 sm:p-2">
-                                        <table className="w-full text-xs sm:text-sm">
+                                    <div className="p-1 flex-1 overflow-y-auto custom-scrollbar">
+                                        <table className="w-full">
                                             <thead>
-                                                <tr className="text-slate-500 text-xs uppercase tracking-wider">
-                                                    <th className="text-left py-2 px-2 font-medium">Pos</th>
-                                                    <th className="text-left py-2 px-2 font-medium">Nombre</th>
+                                                <tr className="text-slate-500/60 text-[9px] uppercase tracking-widest border-b border-white/5">
+                                                    <lh className="text-left py-2 px-3 font-semibold w-12">Pos</lh>
+                                                    <lh className="text-left py-2 px-3 font-semibold">Jugador</lh>
                                                     {isEditMode && <th className="w-8"></th>}
                                                 </tr>
                                             </thead>
-                                            {team.starters.map((player, idx) => (
-                                                <DraggableRow
-                                                    key={`starter-${team.id}-${idx}`}
-                                                    id={`starter-${team.id}-${idx}`}
-                                                    player={player}
-                                                    isEditMode={isEditMode}
-                                                    teamId={team.id}
-                                                    origin="starter"
-                                                    idx={idx}
-                                                    isBeingDragged={draggedId === `starter-${team.id}-${idx}`}
-                                                    onSwapClick={() => setSwapModal({ player, teamId: team.id, origin: 'starter', idx })}
-                                                />
-                                            ))}
+                                            <tbody className="divide-y divide-white/5">
+                                                {team.starters.map((player, idx) => (
+                                                    <DraggableRow
+                                                        key={`starter-${team.id}-${idx}`}
+                                                        id={`starter-${team.id}-${idx}`}
+                                                        player={player}
+                                                        isEditMode={isEditMode}
+                                                        teamId={team.id}
+                                                        origin="starter"
+                                                        idx={idx}
+                                                        isBeingDragged={draggedId === `starter-${team.id}-${idx}`}
+                                                        onSwapClick={() => setSwapModal({ player, teamId: team.id, origin: 'starter', idx })}
+                                                        onCaptainClick={() => handleCaptainToggle(team.id, player.id, 'starter', idx)}
+                                                        isCaptain={player.isCaptain}
+                                                    />
+                                                ))}
+                                            </tbody>
 
                                             {team.bench.length > 0 && (
                                                 <tbody>
                                                     <tr>
-                                                        <td colSpan={isEditMode ? 3 : 2} className="py-2 px-2 text-xs text-slate-600 uppercase tracking-widest text-center bg-slate-800/50">
-                                                            Suplentes
+                                                        <td colSpan={isEditMode ? 3 : 2} className="py-2.5 px-3">
+                                                            <div className="flex items-center gap-2 opacity-50">
+                                                                <div className="h-px bg-white/10 flex-1"></div>
+                                                                <span className="text-[8px] text-slate-400 uppercase font-black tracking-widest">Suplentes</span>
+                                                                <div className="h-px bg-white/10 flex-1"></div>
+                                                            </div>
                                                         </td>
                                                     </tr>
                                                 </tbody>
                                             )}
 
-                                            {team.bench.map((player, idx) => (
-                                                <DraggableRow
-                                                    key={`bench-${team.id}-${idx}`}
-                                                    id={`bench-${team.id}-${idx}`}
-                                                    player={player}
-                                                    isEditMode={isEditMode}
-                                                    teamId={team.id}
-                                                    origin="bench"
-                                                    idx={idx}
-                                                    isBeingDragged={draggedId === `bench-${team.id}-${idx}`}
-                                                    onSwapClick={() => setSwapModal({ player, teamId: team.id, origin: 'bench', idx })}
-                                                />
-                                            ))}
+                                            <tbody className="divide-y divide-white/5">
+                                                {team.bench.map((player, idx) => (
+                                                    <DraggableRow
+                                                        key={`bench-${team.id}-${idx}`}
+                                                        id={`bench-${team.id}-${idx}`}
+                                                        player={player}
+                                                        isEditMode={isEditMode}
+                                                        teamId={team.id}
+                                                        origin="bench"
+                                                        idx={idx}
+                                                        isBeingDragged={draggedId === `bench-${team.id}-${idx}`}
+                                                        onSwapClick={() => setSwapModal({ player, teamId: team.id, origin: 'bench', idx })}
+                                                        onCaptainClick={() => handleCaptainToggle(team.id, player.id, 'bench', idx)}
+                                                        isCaptain={player.isCaptain}
+                                                    />
+                                                ))}
+                                            </tbody>
                                         </table>
                                     </div>
                                 </DroppableTeamCard>
@@ -448,53 +556,61 @@ export default function TeamsTable() {
                     </div>
                 </div>
 
-                {/* Footer con navegación siempre visible */}
-                <div className="p-3 sm:p-4 border-t border-slate-800 bg-slate-900 flex items-center justify-center gap-3 sm:gap-4">
+                {/* Footer Navigation */}
+                <div className="shrink-0 p-4 border-t border-white/5 bg-slate-950/80 backdrop-blur-xl flex items-center justify-center gap-8 relative z-30">
                     <button
                         onClick={scrollLeft}
-                        className="p-2 sm:p-3 bg-slate-800 hover:bg-emerald-600 rounded-full text-white border border-slate-700 transition-all hover:scale-110 shadow-lg"
-                        title="Equipo anterior"
+                        className="group p-4 bg-white/5 hover:bg-emerald-600 hover:text-white rounded-full text-slate-400 border border-white/5 transition-all duration-300 shadow-lg hover:shadow-[0_0_20px_rgba(16,185,129,0.4)]"
+                        title="Anterior"
                     >
-                        <ChevronLeft size={20} className="sm:w-6 sm:h-6" />
+                        <ChevronLeft size={24} className="group-hover:-translate-x-1 transition-transform" />
                     </button>
-                    <span className="text-slate-500 text-xs sm:text-sm">Navegar entre equipos</span>
+                    <span className="text-slate-500 text-[10px] font-bold uppercase tracking-[0.3em] select-none">Navegar Equipos</span>
                     <button
                         onClick={scrollRight}
-                        className="p-2 sm:p-3 bg-slate-800 hover:bg-emerald-600 rounded-full text-white border border-slate-700 transition-all hover:scale-110 shadow-lg"
-                        title="Siguiente equipo"
+                        className="group p-4 bg-white/5 hover:bg-emerald-600 hover:text-white rounded-full text-slate-400 border border-white/5 transition-all duration-300 shadow-lg hover:shadow-[0_0_20px_rgba(16,185,129,0.4)]"
+                        title="Siguiente"
                     >
-                        <ChevronRight size={20} className="sm:w-6 sm:h-6" />
+                        <ChevronRight size={24} className="group-hover:translate-x-1 transition-transform" />
                     </button>
                 </div>
 
-                {/* DragOverlay - Follows the cursor with player name */}
+                {/* DragOverlay */}
                 <DragOverlay dropAnimation={null}>
                     {draggedData && (
-                        <div className="bg-emerald-600 text-white px-4 py-2 rounded-lg shadow-2xl font-bold text-sm border-2 border-white flex items-center gap-2">
-                            <span className="text-emerald-200 text-xs">{draggedData.player.position || draggedData.player.role}</span>
-                            <span>{draggedData.player.name}</span>
+                        <div className="bg-slate-900/90 backdrop-blur-xl text-white px-3 py-2 rounded-lg shadow-2xl border border-emerald-500/50 flex items-center gap-2 ring-1 ring-emerald-500/20">
+                            <span className="bg-emerald-500 text-slate-950 text-[9px] font-black px-1.5 py-0.5 rounded">{draggedData.player.position || draggedData.player.role}</span>
+                            <span className="font-bold text-xs">{draggedData.player.name}</span>
                         </div>
                     )}
                 </DragOverlay>
 
                 {/* Swap Modal */}
                 {swapModal && (
-                    <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
-                        <div className="bg-slate-900 border border-slate-700 p-6 rounded-xl max-w-sm w-full">
-                            <h3 className="text-xl font-bold text-white mb-4">Mover Jugador</h3>
-                            <p className="text-slate-400 mb-4">¿A qué equipo quieres mover a <span className="text-white font-bold">{swapModal.player.name}</span>?</p>
-                            <div className="flex flex-col gap-2 max-h-60 overflow-y-auto">
+                    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-6">
+                        <div className="bg-slate-900 border border-white/10 p-6 rounded-2xl max-w-sm w-full shadow-2xl relative overflow-hidden">
+                            <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 blur-3xl rounded-full pointer-events-none"></div>
+
+                            <h3 className="text-lg font-black text-white mb-2 uppercase relative z-10">Mover Jugador</h3>
+                            <p className="text-slate-400 text-sm mb-6 relative z-10">Elige destino para <span className="text-emerald-400 font-bold">{swapModal.player.name}</span></p>
+
+                            <div className="flex flex-col gap-2 max-h-60 overflow-y-auto custom-scrollbar relative z-10">
                                 {tournamentTeams.map(t => t.id !== swapModal.teamId && (
                                     <button
                                         key={t.id}
                                         onClick={() => handleTeamSwap(t.id)}
-                                        className="p-3 text-left bg-slate-800 hover:bg-emerald-600 rounded-lg text-white transition border border-slate-700"
+                                        className="p-3 text-left bg-white/5 hover:bg-emerald-500/10 border border-white/5 hover:border-emerald-500/30 rounded-xl text-slate-300 hover:text-white transition-all duration-200 text-sm font-medium"
                                     >
-                                        Mover a {t.name}
+                                        <span className="text-xs text-slate-500 uppercase mr-2 font-bold">A</span> {t.name}
                                     </button>
                                 ))}
                             </div>
-                            <button onClick={() => setSwapModal(null)} className="mt-4 w-full py-2 text-slate-500 hover:text-white">Cancelar</button>
+                            <button
+                                onClick={() => setSwapModal(null)}
+                                className="mt-6 w-full py-3 text-slate-500 hover:text-white text-xs font-black uppercase tracking-widest transition"
+                            >
+                                Cancelar
+                            </button>
                         </div>
                     </div>
                 )}
