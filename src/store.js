@@ -59,6 +59,22 @@ const useAppStore = create((set, get) => ({
     navigate: (view) => set({ currentView: view }),
     setTournamentTeams: (teams) => set({ tournamentTeams: teams }),
     reset: () => set({ currentView: 'home', matches: [], tournamentTeams: [], activePlayers: [], inputPlayers: '', tournamentName: '', tournamentStartDate: '', tournamentEndDate: '' }),
+
+    // Toast notifications
+    toasts: [],
+    addToast: (toast) => set((state) => ({
+        toasts: [...state.toasts, { id: crypto.randomUUID(), ...toast }]
+    })),
+    removeToast: (id) => set((state) => ({
+        toasts: state.toasts.filter(t => t.id !== id)
+    })),
+
+    // Push notification (central)
+    pushNotification: null,
+    showPushNotification: (message) => {
+        set({ pushNotification: { id: crypto.randomUUID(), message } });
+    },
+    hidePushNotification: () => set({ pushNotification: null }),
 }));
 
 export default useAppStore;

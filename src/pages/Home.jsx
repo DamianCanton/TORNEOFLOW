@@ -1,6 +1,7 @@
+import { useState } from 'react';
 import useAppStore from '../store';
 import { parseFile, downloadTemplate } from '../utils/fileParser';
-import { Upload, Download, Play, Trophy } from 'lucide-react';
+import { Upload, Download, Play, Trophy, AlertCircle } from 'lucide-react';
 import { mockPlayersSimple } from '../data/mockPlayers';
 
 export default function Home() {
@@ -17,15 +18,32 @@ export default function Home() {
         setTournamentEndDate
     } = useAppStore();
 
+    const [errors, setErrors] = useState({
+        tournamentName: '',
+        dates: '',
+        players: '',
+        fileUpload: ''
+    });
+
+    const clearError = (field) => {
+        if (errors[field]) {
+            setErrors(prev => ({ ...prev, [field]: '' }));
+        }
+    };
+
     const handleFileUpload = async (e) => {
         const file = e.target.files[0];
         if (!file) return;
+        clearError('fileUpload');
         try {
             const players = await parseFile(file);
             importPlayers(players);
         } catch (error) {
             console.error("Error importing file:", error);
-            alert("Error al leer el archivo. Asegúrate que sea un Excel válido.");
+            setErrors(prev => ({
+                ...prev,
+                fileUpload: 'Error al leer el archivo. Asegurate que sea un Excel valido.'
+            }));
         }
     };
 
@@ -39,19 +57,25 @@ export default function Home() {
     };
 
     const handleStart = () => {
+        const newErrors = {};
+
         if (!tournamentName.trim()) {
-            alert('Por favor, ingresa el nombre del torneo.');
-            return;
+            newErrors.tournamentName = 'Por favor, ingresa el nombre del torneo';
         }
         if (!tournamentStartDate || !tournamentEndDate) {
-            alert('Por favor, ingresa las fechas de inicio y fin del torneo.');
-            return;
+            newErrors.dates = 'Por favor, ingresa las fechas de inicio y fin';
         }
         const trimmed = inputPlayers.trim();
         if (!trimmed) {
-            alert('Por favor, ingresa una lista de jugadores.');
+            newErrors.players = 'Por favor, ingresa una lista de jugadores';
+        }
+
+        if (Object.keys(newErrors).length > 0) {
+            setErrors(prev => ({ ...prev, ...newErrors }));
             return;
         }
+
+        setErrors({});
         syncPlayersFromText(trimmed);
     };
 
@@ -85,32 +109,46 @@ export default function Home() {
                             <label className="text-[10px] uppercase font-bold tracking-widest text-slate-500 ml-1">Nombre</label>
                             <input
                                 type="text"
-                                className="w-full px-4 py-3 bg-black/30 rounded-xl border border-white/10 text-white placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all font-medium"
+                                className={`w-full px-4 py-3 bg-black/30 rounded-xl border text-white placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all font-medium ${errors.tournamentName ? 'border-rose-500/50' : 'border-white/10'}`}
                                 placeholder="Ej: Copa de Verano 2024"
                                 value={tournamentName}
-                                onChange={(e) => setTournamentName(e.target.value)}
+                                onChange={(e) => { setTournamentName(e.target.value); clearError('tournamentName'); }}
                             />
+                            {errors.tournamentName && (
+                                <div className="flex items-center gap-2 mt-2 px-3 py-2 bg-rose-500/10 border border-rose-500/20 rounded-lg animate-fade-in">
+                                    <AlertCircle size={14} className="text-rose-400 flex-shrink-0" />
+                                    <span className="text-rose-400 text-xs font-medium">{errors.tournamentName}</span>
+                                </div>
+                            )}
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-1.5">
-                                <label className="text-[10px] uppercase font-bold tracking-widest text-slate-500 ml-1">Inicio</label>
-                                <input
-                                    type="date"
-                                    className="w-full px-4 py-3 bg-black/30 rounded-xl border border-white/10 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all text-sm font-medium"
-                                    value={tournamentStartDate}
-                                    onChange={(e) => setTournamentStartDate(e.target.value)}
-                                />
+                        <div className="space-y-2">
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-1.5">
+                                    <label className="text-[10px] uppercase font-bold tracking-widest text-slate-500 ml-1">Inicio</label>
+                                    <input
+                                        type="date"
+                                        className={`w-full px-4 py-3 bg-black/30 rounded-xl border text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all text-sm font-medium ${errors.dates ? 'border-rose-500/50' : 'border-white/10'}`}
+                                        value={tournamentStartDate}
+                                        onChange={(e) => { setTournamentStartDate(e.target.value); clearError('dates'); }}
+                                    />
+                                </div>
+                                <div className="space-y-1.5">
+                                    <label className="text-[10px] uppercase font-bold tracking-widest text-slate-500 ml-1">Fin</label>
+                                    <input
+                                        type="date"
+                                        className={`w-full px-4 py-3 bg-black/30 rounded-xl border text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all text-sm font-medium ${errors.dates ? 'border-rose-500/50' : 'border-white/10'}`}
+                                        value={tournamentEndDate}
+                                        onChange={(e) => { setTournamentEndDate(e.target.value); clearError('dates'); }}
+                                    />
+                                </div>
                             </div>
-                            <div className="space-y-1.5">
-                                <label className="text-[10px] uppercase font-bold tracking-widest text-slate-500 ml-1">Fin</label>
-                                <input
-                                    type="date"
-                                    className="w-full px-4 py-3 bg-black/30 rounded-xl border border-white/10 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all text-sm font-medium"
-                                    value={tournamentEndDate}
-                                    onChange={(e) => setTournamentEndDate(e.target.value)}
-                                />
-                            </div>
+                            {errors.dates && (
+                                <div className="flex items-center gap-2 px-3 py-2 bg-rose-500/10 border border-rose-500/20 rounded-lg animate-fade-in">
+                                    <AlertCircle size={14} className="text-rose-400 flex-shrink-0" />
+                                    <span className="text-rose-400 text-xs font-medium">{errors.dates}</span>
+                                </div>
+                            )}
                         </div>
                     </div>
 
@@ -118,11 +156,17 @@ export default function Home() {
                     <div className="space-y-1.5">
                         <label className="text-[10px] uppercase font-bold tracking-widest text-slate-500 ml-1">Jugadores</label>
                         <textarea
-                            className="w-full p-4 bg-black/30 rounded-xl border border-white/10 text-white min-h-[160px] placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all text-sm font-mono leading-relaxed resize-none custom-scrollbar"
+                            className={`w-full p-4 bg-black/30 rounded-xl border text-white min-h-[160px] placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all text-sm font-mono leading-relaxed resize-none custom-scrollbar ${errors.players ? 'border-rose-500/50' : 'border-white/10'}`}
                             placeholder={"Luis (ARQ)\nCarlos (DEF)\nAna (MED)\nPedro (DEL)"}
                             value={inputPlayers}
-                            onChange={(e) => setInputPlayers(e.target.value)}
+                            onChange={(e) => { setInputPlayers(e.target.value); clearError('players'); }}
                         />
+                        {errors.players && (
+                            <div className="flex items-center gap-2 mt-2 px-3 py-2 bg-rose-500/10 border border-rose-500/20 rounded-lg animate-fade-in">
+                                <AlertCircle size={14} className="text-rose-400 flex-shrink-0" />
+                                <span className="text-rose-400 text-xs font-medium">{errors.players}</span>
+                            </div>
+                        )}
                     </div>
 
                     {/* Primary Action */}
@@ -153,6 +197,14 @@ export default function Home() {
                             <Download size={16} /> Descargar Modelo
                         </button>
                     </div>
+
+                    {/* File Upload Error */}
+                    {errors.fileUpload && (
+                        <div className="flex items-center gap-2 px-3 py-2 bg-rose-500/10 border border-rose-500/20 rounded-lg animate-fade-in">
+                            <AlertCircle size={14} className="text-rose-400 flex-shrink-0" />
+                            <span className="text-rose-400 text-xs font-medium">{errors.fileUpload}</span>
+                        </div>
+                    )}
                 </div>
             </div>
 

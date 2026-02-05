@@ -99,6 +99,7 @@ function DraggablePlayer({ player, id, isEditMode, onClick, onCaptainClick, isCa
                 <span className="text-[10px] sm:text-xs font-bold text-slate-100 whitespace-nowrap tracking-tight flex items-center gap-1">
                     {player.vacante ? '?' : player.name}
                     {isCaptain && <span className="text-amber-400 text-[8px] font-black">(C)</span>}
+                    {player.isOutOfPosition && <span className="text-amber-400 text-[8px] font-black">({player.position})</span>}
                 </span>
                 {!player.vacante && (
                     <span className={`text-[8px] font-black uppercase tracking-[0.15em] mt-0.5
@@ -199,7 +200,7 @@ function BenchDroppableArea({ children }) {
 // --- Main Layout ---
 
 export default function TournamentRoom() {
-    const { tournamentTeams, setTournamentTeams, reset, navigate, tournamentName, tournamentStartDate, tournamentEndDate } = useAppStore();
+    const { tournamentTeams, setTournamentTeams, reset, navigate, tournamentName, tournamentStartDate, tournamentEndDate, addToast, showPushNotification } = useAppStore();
 
     const formatDate = (dateStr) => {
         if (!dateStr) return '';
@@ -248,11 +249,21 @@ export default function TournamentRoom() {
                 if (!targetSlot.vacante) {
                     bench.push({ ...targetSlot, top: undefined, left: undefined, role: undefined, isOutOfPosition: undefined });
                 }
+                const isOutOfPosition = player.position !== 'POLI' && player.position !== targetSlot.role;
                 starters[slotIdx] = {
                     ...player,
                     role: targetSlot.role, top: targetSlot.top, left: targetSlot.left,
-                    isOutOfPosition: player.position !== 'POLI' && player.position !== targetSlot.role
+                    isOutOfPosition
                 };
+                team.starters = starters;
+                team.bench = bench;
+                newTeams[currentIndex] = team;
+                setTournamentTeams(newTeams);
+                addToast({ type: 'success', message: `"${player.name}" ingreso como titular` });
+                if (isOutOfPosition) {
+                    addToast({ type: 'warning', message: `"${player.name}" esta jugando fuera de posicion (${player.position})` });
+                }
+                return;
             }
         } else if (activeData.origin === 'field') {
             const sIdx = parseInt(activeId.replace('starter-', ''));
@@ -262,12 +273,34 @@ export default function TournamentRoom() {
                 const targetIdx = parseInt(overId.split('-')[1]);
                 if (sIdx === targetIdx) return;
                 const targetPlayer = starters[targetIdx];
-                starters[targetIdx] = { ...player, top: targetPlayer.top, left: targetPlayer.left, role: targetPlayer.role };
-                starters[sIdx] = { ...targetPlayer, top: player.top, left: player.left, role: player.role };
+                const playerOutOfPosition = player.position !== 'POLI' && player.position !== targetPlayer.role;
+                const targetOutOfPosition = targetPlayer.position !== 'POLI' && targetPlayer.position !== player.role;
+                starters[targetIdx] = { ...player, top: targetPlayer.top, left: targetPlayer.left, role: targetPlayer.role, isOutOfPosition: playerOutOfPosition };
+                starters[sIdx] = { ...targetPlayer, top: player.top, left: player.left, role: player.role, isOutOfPosition: targetOutOfPosition };
+                team.starters = starters;
+                team.bench = bench;
+                newTeams[currentIndex] = team;
+                setTournamentTeams(newTeams);
+                if (!player.vacante && !targetPlayer.vacante) {
+                    addToast({ type: 'success', message: `"${player.name}" y "${targetPlayer.name}" intercambiaron posiciones` });
+                    if (playerOutOfPosition) {
+                        addToast({ type: 'warning', message: `"${player.name}" esta jugando fuera de posicion (${player.position})` });
+                    }
+                    if (targetOutOfPosition) {
+                        addToast({ type: 'warning', message: `"${targetPlayer.name}" esta jugando fuera de posicion (${targetPlayer.position})` });
+                    }
+                }
+                return;
             } else if (overId === 'bench-zone') {
                 if (!player.vacante) {
                     starters[sIdx] = { name: 'FALTA UNO', vacante: true, role: player.role, top: player.top, left: player.left };
                     bench.push({ ...player, top: undefined, left: undefined, role: undefined, isOutOfPosition: undefined });
+                    team.starters = starters;
+                    team.bench = bench;
+                    newTeams[currentIndex] = team;
+                    setTournamentTeams(newTeams);
+                    addToast({ type: 'success', message: `"${player.name}" paso al banco` });
+                    return;
                 }
             }
         }
@@ -299,6 +332,7 @@ export default function TournamentRoom() {
         recalculateTeamStats(targetTeam);
         setTournamentTeams(newTeams);
         setSwapModal(null);
+        addToast({ type: 'success', message: `"${playerToMove.name}" transferido a ${targetTeam.name}` });
     };
 
     // Handle captain selection
@@ -322,6 +356,14 @@ export default function TournamentRoom() {
         const newTeams = JSON.parse(JSON.stringify(tournamentTeams));
         newTeams[currentIndex].name = newName;
         setTournamentTeams(newTeams);
+    };
+
+    // Handle save changes
+    const handleToggleEditMode = () => {
+        if (isEditMode) {
+            showPushNotification('Cambios guardados');
+        }
+        setIsEditMode(!isEditMode);
     };
 
     return (
@@ -484,7 +526,7 @@ export default function TournamentRoom() {
                     {/* Footer Actions */}
                     <div className="p-6 border-t border-white/5 bg-black/20">
                         <button
-                            onClick={() => setIsEditMode(!isEditMode)}
+                            onClick={handleToggleEditMode}
                             className={`w-full py-4 rounded-xl font-bold uppercase tracking-wide text-xs flex items-center justify-center gap-2 transition-all duration-300
                                 ${isEditMode
                                     ? 'bg-emerald-500 hover:bg-emerald-400 text-slate-900 shadow-[0_0_20px_rgba(16,185,129,0.4)]'

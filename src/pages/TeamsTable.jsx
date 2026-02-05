@@ -67,6 +67,7 @@ function DraggableRow({ player, id, isEditMode, onSwapClick, onCaptainClick, tea
                             <>
                                 {player.name}
                                 {isCaptain && <span className="text-[9px] text-amber-400 font-bold">(C)</span>}
+                                {player.isOutOfPosition && <span className="text-[9px] text-amber-400 font-bold">({player.position})</span>}
                             </>
                         )}
                     </span>
@@ -139,7 +140,7 @@ function DroppableTeamCard({ team, children, isEditMode }) {
 }
 
 export default function TeamsTable() {
-    const { tournamentTeams, setTournamentTeams, navigate, tournamentName, tournamentStartDate, tournamentEndDate } = useAppStore();
+    const { tournamentTeams, setTournamentTeams, navigate, tournamentName, tournamentStartDate, tournamentEndDate, addToast, showPushNotification } = useAppStore();
 
     const formatDate = (dateStr) => {
         if (!dateStr) return '';
@@ -213,13 +214,14 @@ export default function TeamsTable() {
             const targetPlayer = { ...targetList[targetIdx] };
 
             if (targetPlayer.vacante) {
+                const sourceOutOfPosition = sourcePlayer.position !== 'POLI' && sourcePlayer.position !== targetPlayer.role;
                 if (targetOrigin === 'starter') {
                     targetList[targetIdx] = {
                         ...sourcePlayer,
                         role: targetPlayer.role,
                         top: targetPlayer.top,
                         left: targetPlayer.left,
-                        isOutOfPosition: sourcePlayer.position !== 'POLI' && sourcePlayer.position !== targetPlayer.role
+                        isOutOfPosition: sourceOutOfPosition
                     };
                 }
 
@@ -235,22 +237,33 @@ export default function TeamsTable() {
                 } else {
                     sourceList.splice(activeData.idx, 1);
                 }
+
+                // Toast warning si está fuera de posición
+                if (targetOrigin === 'starter' && sourceOutOfPosition) {
+                    setTournamentTeams(newTeams);
+                    addToast({ type: 'success', message: `"${sourcePlayer.name}" ingreso como titular` });
+                    addToast({ type: 'warning', message: `"${sourcePlayer.name}" esta jugando fuera de posicion (${sourcePlayer.position})` });
+                    return;
+                }
             } else {
                 // Full swap
+                const sourceOutOfPosition = sourcePlayer.position !== 'POLI' && sourcePlayer.position !== targetPlayer.role;
+                const targetOutOfPosition = targetPlayer.position !== 'POLI' && targetPlayer.position !== sourcePlayer.role;
+
                 if (activeData.origin === 'starter' && targetOrigin === 'starter') {
                     sourceList[activeData.idx] = {
                         ...targetPlayer,
                         role: sourcePlayer.role,
                         top: sourcePlayer.top,
                         left: sourcePlayer.left,
-                        isOutOfPosition: targetPlayer.position !== 'POLI' && targetPlayer.position !== sourcePlayer.role
+                        isOutOfPosition: targetOutOfPosition
                     };
                     targetList[targetIdx] = {
                         ...sourcePlayer,
                         role: targetPlayer.role,
                         top: targetPlayer.top,
                         left: targetPlayer.left,
-                        isOutOfPosition: sourcePlayer.position !== 'POLI' && sourcePlayer.position !== targetPlayer.role
+                        isOutOfPosition: sourceOutOfPosition
                     };
                 } else if (activeData.origin === 'bench' && targetOrigin === 'bench') {
                     sourceList[activeData.idx] = targetPlayer;
@@ -262,7 +275,7 @@ export default function TeamsTable() {
                             role: sourcePlayer.role,
                             top: sourcePlayer.top,
                             left: sourcePlayer.left,
-                            isOutOfPosition: targetPlayer.position !== 'POLI' && targetPlayer.position !== sourcePlayer.role
+                            isOutOfPosition: targetOutOfPosition
                         };
                         targetList[targetIdx] = { ...sourcePlayer, top: undefined, left: undefined, role: undefined, isOutOfPosition: undefined };
                     } else {
@@ -271,7 +284,7 @@ export default function TeamsTable() {
                             role: targetPlayer.role,
                             top: targetPlayer.top,
                             left: targetPlayer.left,
-                            isOutOfPosition: sourcePlayer.position !== 'POLI' && sourcePlayer.position !== targetPlayer.role
+                            isOutOfPosition: sourceOutOfPosition
                         };
                         sourceList[activeData.idx] = { ...targetPlayer, top: undefined, left: undefined, role: undefined, isOutOfPosition: undefined };
                     }
@@ -282,9 +295,29 @@ export default function TeamsTable() {
             if (sourceTeam.id !== targetTeam.id) {
                 recalculateTeamStats(sourceTeam);
                 recalculateTeamStats(targetTeam);
+                setTournamentTeams(newTeams);
+                addToast({ type: 'success', message: `"${sourcePlayer.name}" transferido a ${targetTeam.name}` });
+                // Warning si queda fuera de posición
+                const movedPlayer = targetList[targetIdx];
+                if (movedPlayer && movedPlayer.isOutOfPosition) {
+                    addToast({ type: 'warning', message: `"${sourcePlayer.name}" esta jugando fuera de posicion (${sourcePlayer.position})` });
+                }
+            } else {
+                // Swaps dentro del mismo equipo NO cambian el score
+                setTournamentTeams(newTeams);
+                if (!sourcePlayer.vacante && !targetPlayer.vacante) {
+                    addToast({ type: 'success', message: `"${sourcePlayer.name}" y "${targetPlayer.name}" intercambiaron posiciones` });
+                    // Check out of position para ambos jugadores después del swap
+                    const newSourcePlayer = sourceList[activeData.idx];
+                    const newTargetPlayer = targetList[targetIdx];
+                    if (newTargetPlayer && newTargetPlayer.isOutOfPosition) {
+                        addToast({ type: 'warning', message: `"${sourcePlayer.name}" esta jugando fuera de posicion (${sourcePlayer.position})` });
+                    }
+                    if (newSourcePlayer && newSourcePlayer.isOutOfPosition) {
+                        addToast({ type: 'warning', message: `"${targetPlayer.name}" esta jugando fuera de posicion (${targetPlayer.position})` });
+                    }
+                }
             }
-            // Swaps dentro del mismo equipo NO cambian el score
-            setTournamentTeams(newTeams);
             return;
         }
 
@@ -321,6 +354,7 @@ export default function TeamsTable() {
             recalculateTeamStats(sourceTeam);
             recalculateTeamStats(targetTeam);
             setTournamentTeams(newTeams);
+            addToast({ type: 'success', message: `"${playerToMove.name}" enviado al banco de ${targetTeam.name}` });
         }
     };
 
@@ -355,6 +389,7 @@ export default function TeamsTable() {
         recalculateTeamStats(targetTeam);
         setTournamentTeams(newTeams);
         setSwapModal(null);
+        addToast({ type: 'success', message: `"${playerToMove.name}" transferido a ${targetTeam.name}` });
     };
 
     // Handle captain selection
@@ -429,7 +464,12 @@ export default function TeamsTable() {
                         </div>
 
                         <button
-                            onClick={() => setIsEditMode(!isEditMode)}
+                            onClick={() => {
+                                if (isEditMode) {
+                                    showPushNotification('Cambios guardados');
+                                }
+                                setIsEditMode(!isEditMode);
+                            }}
                             className={`flex items-center justify-center gap-2 px-4 py-2 rounded-xl transition-all border text-xs font-bold uppercase tracking-wider shadow-lg
                                 ${isEditMode
                                     ? 'bg-emerald-500 border-emerald-400 text-slate-950 shadow-emerald-900/40 hover:bg-emerald-400'
