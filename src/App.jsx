@@ -3,6 +3,7 @@ import Home from './pages/Home';
 import MatchRoom from './pages/MatchRoom';
 import PlayerEditor from './pages/PlayerEditor';
 import TournamentRoom from './pages/TournamentRoom';
+import TeamsTable from './pages/TeamsTable';
 
 function App() {
     const currentView = useAppStore((state) => state.currentView);
@@ -13,8 +14,10 @@ function App() {
             {currentView === 'editor' && <PlayerEditor />}
             {currentView === 'matchRoom' && <MatchRoom />}
             {currentView === 'tournament' && <TournamentRoom />}
+            {currentView === 'teamsTable' && <TeamsTable />}
         </main>
     );
 }
 
 export default App;
+

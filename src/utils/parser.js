@@ -28,7 +28,8 @@ export const parsePlayers = (text) => {
     });
 };
 
-const normalizePosition = (rawPos) => {
+// Exportadas para reusar en fileParser.js
+export const normalizePosition = (rawPos) => {
     if (!rawPos) return 'POLI';
     const clean = rawPos.toUpperCase().trim();
     // Allow POLI explicitly or fallback to it
@@ -41,7 +42,7 @@ const normalizePosition = (rawPos) => {
     return valid.includes(clean.substring(0, 3)) ? clean.substring(0, 3) : 'POLI';
 };
 
-const isInjured = (val) => {
+export const isInjured = (val) => {
     if (!val) return false;
     return /^[sy1x]/i.test(val.trim()); // Starts with s, y, 1, or x (si, yes, x)
 };

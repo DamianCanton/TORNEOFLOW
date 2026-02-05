@@ -10,8 +10,14 @@ const useAppStore = create((set, get) => ({
     tournamentTeams: [],
     reserves: [],
     currentView: 'home',
+    tournamentName: '',
+    tournamentStartDate: '',
+    tournamentEndDate: '',
 
     setInputPlayers: (text) => set({ inputPlayers: text }),
+    setTournamentName: (name) => set({ tournamentName: name }),
+    setTournamentStartDate: (date) => set({ tournamentStartDate: date }),
+    setTournamentEndDate: (date) => set({ tournamentEndDate: date }),
 
     syncPlayersFromText: (text) => {
         const parsedPlayers = parsePlayers(text).map(p => ({ ...p, id: crypto.randomUUID() }));
@@ -32,7 +38,8 @@ const useAppStore = create((set, get) => ({
     },
 
     processPlayers: (players, textSource) => {
-        if (players.length > 25) {
+        // Mínimo 22 jugadores para torneo (11 por equipo × 2 equipos)
+        if (players.length >= 22) {
             const teams = generateTournament(players);
             set({ inputPlayers: textSource, activePlayers: players, tournamentTeams: teams, currentView: 'tournament' });
         } else {
@@ -51,7 +58,7 @@ const useAppStore = create((set, get) => ({
     updatePlayer: (updatedPlayer) => set((state) => ({ activePlayers: state.activePlayers.map((p) => (p.id === updatedPlayer.id ? updatedPlayer : p)) })),
     navigate: (view) => set({ currentView: view }),
     setTournamentTeams: (teams) => set({ tournamentTeams: teams }),
-    reset: () => set({ currentView: 'home', matches: [], tournamentTeams: [], activePlayers: [], inputPlayers: '' }),
+    reset: () => set({ currentView: 'home', matches: [], tournamentTeams: [], activePlayers: [], inputPlayers: '', tournamentName: '', tournamentStartDate: '', tournamentEndDate: '' }),
 }));
 
 export default useAppStore;

@@ -1,4 +1,5 @@
 import { read, utils, writeFile } from 'xlsx';
+import { normalizePosition, isInjured } from './parser';
 
 export const downloadTemplate = () => {
     const headers = ['Nombre', 'Posicion', 'Calidad', 'Responsabilidad', 'Edad', 'Lesionado'];
@@ -45,23 +46,4 @@ const normalizeKeys = (row) => {
         else if (['lesionado', 'injured', 'estado'].some(k => lowerKey.includes(k))) normalized.injured = isInjured(val);
     });
     return normalized;
-};
-
-// Duplicate helpers from parser.js to avoid circular deps or keep independent
-// Ideally we should export these from parser.js but for now... 
-// Actually let's just minimal copy or export from parser.js
-// To avoid complexity, I'll inline a simple version here.
-
-const normalizePosition = (val) => {
-    if (!val) return 'POLI';
-    const clean = String(val).toUpperCase().trim();
-    if (clean.startsWith('POL')) return 'POLI';
-    if (clean === 'DT' || clean.startsWith('DIR')) return 'DT';
-    const valid = ['ARQ', 'CEN', 'LAT', 'MED', 'VOL', 'DEL'];
-    return valid.includes(clean.substring(0, 3)) ? clean.substring(0, 3) : 'POLI';
-};
-
-const isInjured = (val) => {
-    if (!val) return false;
-    return /^[sy1x]/i.test(String(val).trim());
 };

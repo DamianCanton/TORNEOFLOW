@@ -14,10 +14,37 @@ export const generateTournament = (allPlayers) => {
     const coaches = allPlayers.filter(p => p.position === 'DT');
     const players = allPlayers.filter(p => p.position !== 'DT');
 
-    // Calculate teams count: 15 players per team (11 starters + 4 bench)
-    // Minimum 2 teams
-    const calculatedTeams = Math.floor(players.length / 15);
-    const TEAMS_COUNT = calculatedTeams < 2 ? 2 : calculatedTeams;
+    // Constantes de configuración
+    const MIN_PER_TEAM = 11;   // Mínimo: solo titulares (formación completa)
+    const IDEAL_PER_TEAM = 15; // Ideal: 11 titulares + 4 suplentes
+    const MAX_PER_TEAM = 18;   // Máximo: 11 titulares + 7 suplentes
+
+    // Calcular número óptimo de equipos usando rango flexible
+    let TEAMS_COUNT;
+
+    if (players.length < MIN_PER_TEAM * 2) {
+        // Menos de 22 jugadores: forzar 2 equipos (caso límite)
+        TEAMS_COUNT = 2;
+    } else {
+        // Buscar número de equipos que mantenga entre MIN y MAX por equipo
+        // Preferir el que más se acerque a IDEAL_PER_TEAM
+        const minTeams = Math.ceil(players.length / MAX_PER_TEAM);
+        const maxTeams = Math.floor(players.length / MIN_PER_TEAM);
+
+        let bestTeams = minTeams;
+        let bestDiff = Infinity;
+
+        for (let t = minTeams; t <= maxTeams; t++) {
+            const perTeam = players.length / t;
+            const diff = Math.abs(perTeam - IDEAL_PER_TEAM);
+            if (diff < bestDiff) {
+                bestDiff = diff;
+                bestTeams = t;
+            }
+        }
+
+        TEAMS_COUNT = Math.max(2, bestTeams);
+    }
 
     const teams = Array.from({ length: TEAMS_COUNT }, (_, i) => ({
         id: i + 1,
@@ -71,10 +98,16 @@ export const generateTournament = (allPlayers) => {
 
             if (foundIdx !== -1) {
                 const p = squad.splice(foundIdx, 1)[0];
-                const isOutOfPosition = p.role !== slot.role && p.role !== 'POLI';
+                // Usar position (posición natural) en vez de role (asignado en distribución)
+                const isOutOfPosition = p.position !== slot.role && p.position !== 'POLI';
                 team.starters.push({ ...p, ...slot, isOutOfPosition });
             } else {
-                team.starters.push({ name: 'FALTA UNO', vacante: true, ...slot });
+                team.starters.push({
+                    name: 'FALTA UNO',
+                    vacante: true,
+                    id: `vacante-${team.id}-${slot.role}`,
+                    ...slot
+                });
             }
         });
         team.bench = squad;
@@ -87,13 +120,12 @@ export const generateTournament = (allPlayers) => {
         };
     });
 
-    // Assign Coaches (DTs)
-    // Assign Coaches (DTs)
+    // Asignar DTs (1 por equipo si hay suficientes)
     teams.forEach((team, index) => {
         const coach = coaches[index];
 
         team.starters.push({
-            ...(coach || { name: 'FALTA DT', vacante: true }),
+            ...(coach || { name: 'FALTA DT', vacante: true, id: `vacante-dt-${index}` }),
             role: 'DT',
             top: '85%', // Slightly higher and more visible
             left: '8%',
@@ -102,4 +134,22 @@ export const generateTournament = (allPlayers) => {
     });
 
     return teams;
+};
+
+export const recalculateTeamStats = (team) => {
+    const getScore = (p) => (p.quality || 5) * 0.7 + (p.responsibility || 3) * 0.3;
+    const activePlayers = [
+        ...team.starters.filter(p => !p.vacante),
+        ...team.bench
+    ];
+
+    const totalScore = activePlayers.reduce((acc, p) => acc + getScore(p), 0);
+    const totalAge = activePlayers.reduce((acc, p) => acc + (p.age || 0), 0);
+
+    team.stats = {
+        score: activePlayers.length ? totalScore.toFixed(1) : '0.0',
+        avgAge: activePlayers.length ? (totalAge / activePlayers.length).toFixed(1) : '0'
+    };
+
+    return team;
 };
