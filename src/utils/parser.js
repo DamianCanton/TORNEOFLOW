@@ -32,13 +32,24 @@ export const parsePlayers = (text) => {
 export const normalizePosition = (rawPos) => {
     if (!rawPos) return 'POLI';
     const clean = rawPos.toUpperCase().trim();
+
+    // Mapeo de alias completos (palabras en español e inglés)
+    const aliases = {
+        'ARQUERO': 'ARQ', 'PORTERO': 'ARQ', 'GOALKEEPER': 'ARQ', 'GK': 'ARQ',
+        'DEFENSOR': 'DEF', 'DEFENSA': 'DEF', 'CENTRAL': 'DEF', 'LATERAL': 'DEF', 'ZAGUERO': 'DEF',
+        'MEDIOCAMPISTA': 'MED', 'MEDIO': 'MED', 'VOLANTE': 'MED', 'CENTROCAMPISTA': 'MED',
+        'DELANTERO': 'DEL', 'ATACANTE': 'DEL', 'PUNTA': 'DEL', 'FORWARD': 'DEL',
+        'POLIVALENTE': 'POLI', 'POLIFUNCIONAL': 'POLI', 'COMODIN': 'POLI'
+    };
+    if (aliases[clean]) return aliases[clean];
+
     // Allow POLI explicitly or fallback to it
     if (clean.startsWith('POL')) return 'POLI';
 
     // DT is now a valid position
     if (clean === 'DT' || clean.startsWith('DIR')) return 'DT';
 
-    const valid = ['ARQ', 'CEN', 'LAT', 'MED', 'VOL', 'DEL'];
+    const valid = ['ARQ', 'CEN', 'LAT', 'MED', 'VOL', 'DEL', 'DEF'];
     return valid.includes(clean.substring(0, 3)) ? clean.substring(0, 3) : 'POLI';
 };
 

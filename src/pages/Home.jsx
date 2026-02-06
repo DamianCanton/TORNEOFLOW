@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import useAppStore from '../store';
 import { parseFile, downloadTemplate } from '../utils/fileParser';
+import { validateTournamentName, validateDates, validatePlayers } from '../utils/validators';
 import { Upload, Download, Play, Trophy, AlertCircle } from 'lucide-react';
 import { mockPlayersSimple } from '../data/mockPlayers';
 
@@ -59,16 +60,14 @@ export default function Home() {
     const handleStart = () => {
         const newErrors = {};
 
-        if (!tournamentName.trim()) {
-            newErrors.tournamentName = 'Por favor, ingresa el nombre del torneo';
-        }
-        if (!tournamentStartDate || !tournamentEndDate) {
-            newErrors.dates = 'Por favor, ingresa las fechas de inicio y fin';
-        }
-        const trimmed = inputPlayers.trim();
-        if (!trimmed) {
-            newErrors.players = 'Por favor, ingresa una lista de jugadores';
-        }
+        const nameError = validateTournamentName(tournamentName);
+        if (nameError) newErrors.tournamentName = nameError;
+
+        const datesError = validateDates(tournamentStartDate, tournamentEndDate);
+        if (datesError) newErrors.dates = datesError;
+
+        const playersError = validatePlayers(inputPlayers);
+        if (playersError) newErrors.players = playersError;
 
         if (Object.keys(newErrors).length > 0) {
             setErrors(prev => ({ ...prev, ...newErrors }));
@@ -76,7 +75,7 @@ export default function Home() {
         }
 
         setErrors({});
-        syncPlayersFromText(trimmed);
+        syncPlayersFromText(inputPlayers.trim());
     };
 
     return (
