@@ -74,6 +74,6 @@ test.describe('Contenido para PDF', () => {
 
         // Debe haber jugadores con posiciones
         const content = await page.textContent('body');
-        expect(content).toMatch(/DEL|MED|CEN|LAT|ARQ|VOL/);
+        expect(content).toMatch(/DEL|MED|CEN|DEF|ARQ/);
     });
 });

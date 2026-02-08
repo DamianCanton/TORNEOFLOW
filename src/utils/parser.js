@@ -49,7 +49,9 @@ export const normalizePosition = (rawPos) => {
     // DT is now a valid position
     if (clean === 'DT' || clean.startsWith('DIR')) return 'DT';
 
-    const valid = ['ARQ', 'CEN', 'LAT', 'MED', 'VOL', 'DEL', 'DEF'];
+    const valid = ['ARQ', 'CEN', 'MED', 'DEL', 'DEF'];
+    if (clean.substring(0, 3) === 'LAT') return 'DEF';
+    if (clean.substring(0, 3) === 'VOL') return 'MED';
     return valid.includes(clean.substring(0, 3)) ? clean.substring(0, 3) : 'POLI';
 };
 

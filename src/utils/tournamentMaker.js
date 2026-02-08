@@ -2,10 +2,10 @@
 
 const FORMATION = [
     { role: 'ARQ', top: '88%', left: '50%' },
-    { role: 'LAT', top: '70%', left: '15%' }, { role: 'CEN', top: '75%', left: '38%' },
-    { role: 'CEN', top: '75%', left: '62%' }, { role: 'LAT', top: '70%', left: '85%' },
-    { role: 'VOL', top: '45%', left: '15%' }, { role: 'MED', top: '50%', left: '38%' },
-    { role: 'MED', top: '50%', left: '62%' }, { role: 'VOL', top: '45%', left: '85%' },
+    { role: 'DEF', top: '70%', left: '15%' }, { role: 'CEN', top: '75%', left: '38%' },
+    { role: 'CEN', top: '75%', left: '62%' }, { role: 'DEF', top: '70%', left: '85%' },
+    { role: 'MED', top: '45%', left: '15%' }, { role: 'MED', top: '50%', left: '38%' },
+    { role: 'MED', top: '50%', left: '62%' }, { role: 'MED', top: '45%', left: '85%' },
     { role: 'DEL', top: '15%', left: '35%' }, { role: 'DEL', top: '15%', left: '65%' }
 ];
 
@@ -57,13 +57,13 @@ export const generateTournament = (allPlayers) => {
 
     const getScore = (p) => (p.quality || 5) * 0.7 + (p.responsibility || 3) * 0.3;
 
-    const pools = { ARQ: [], CEN: [], LAT: [], MED: [], VOL: [], DEL: [], POLI: [] };
+    const pools = { ARQ: [], CEN: [], DEF: [], MED: [], DEL: [], POLI: [] };
     players.forEach(p => {
         const pos = pools[p.position] ? p.position : 'POLI';
         pools[pos].push(p);
     });
 
-    const order = ['ARQ', 'CEN', 'DEL', 'MED', 'VOL', 'LAT', 'POLI'];
+    const order = ['ARQ', 'CEN', 'DEL', 'DEF', 'MED', 'POLI'];
 
     let teamIndex = 0;
     let direction = 1;

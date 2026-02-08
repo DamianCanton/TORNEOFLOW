@@ -23,7 +23,7 @@ test.describe('Drag & Drop - Estructura', () => {
 
         // Debería haber posiciones visibles (DEL, MED, CEN, etc)
         const content = await page.textContent('body');
-        expect(content).toMatch(/DEL|MED|CEN|LAT|ARQ/);
+        expect(content).toMatch(/DEL|MED|CEN|DEF|ARQ/);
     });
 
     test('debe tener botón de modificar equipo', async ({ page }) => {
