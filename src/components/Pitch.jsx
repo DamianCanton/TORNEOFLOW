@@ -10,8 +10,8 @@ export default function Pitch({ team, isEditMode, children }) {
         <div
             ref={setNodeRef}
             className={`
-                relative w-full aspect-[2/3] sm:aspect-[3/4] md:aspect-[4/3] lg:aspect-[3/4] xl:aspect-[4/3] 
-                bg-emerald-800 rounded-xl overflow-hidden border-2 
+                relative w-full aspect-[2/3] sm:aspect-[3/4] md:aspect-[4/3] lg:aspect-[3/4] xl:aspect-[4/3]
+                bg-emerald-800 rounded-xl overflow-hidden border sm:border-2 
                 ${isOver && isEditMode ? 'border-emerald-400 ring-2 ring-emerald-400/50' : 'border-emerald-700/50'}
                 shadow-2xl transition-all
             `}
@@ -20,12 +20,12 @@ export default function Pitch({ team, isEditMode, children }) {
             <div className="absolute inset-0 bg-[linear-gradient(to_bottom,transparent_0px,transparent_49%,rgba(255,255,255,0.05)_50%,transparent_51%),linear-gradient(to_right,transparent_0px,transparent_49%,rgba(255,255,255,0.05)_50%,transparent_51%)] bg-[length:50px_50px]"></div>
 
             {/* Center Circle */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-24 h-24 border-2 border-white/20 rounded-full"></div>
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 border sm:border-2 border-white/20 rounded-full"></div>
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-2 h-2 bg-white/20 rounded-full"></div>
 
             {/* Penalty Areas */}
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/5 h-[15%] border-b-2 border-x-2 border-white/20 rounded-b-lg"></div>
-            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-3/5 h-[15%] border-t-2 border-x-2 border-white/20 rounded-t-lg"></div>
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/5 h-[15%] border-b border-x sm:border-b-2 sm:border-x-2 border-white/20 rounded-b-lg"></div>
+            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-3/5 h-[15%] border-t border-x sm:border-t-2 sm:border-x-2 border-white/20 rounded-t-lg"></div>
 
             {/* Goals */}
             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1/4 h-2 border-b border-x border-white/40 bg-white/5 rounded-b-sm"></div>

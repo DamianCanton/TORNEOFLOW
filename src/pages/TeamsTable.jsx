@@ -127,7 +127,7 @@ function DroppableTeamCard({ team, children, isEditMode }) {
     return (
         <div
             ref={setNodeRef}
-            className={`flex-shrink-0 w-80 backdrop-blur-xl rounded-2xl border shadow-xl overflow-hidden transition-all duration-300 flex flex-col
+            className={`flex-shrink-0 w-[85vw] sm:w-80 backdrop-blur-xl rounded-2xl border shadow-xl overflow-hidden transition-all duration-300 flex flex-col
                 ${isOver && isEditMode
                     ? 'border-emerald-500/50 bg-emerald-500/5 ring-1 ring-emerald-500/30 scale-[1.01]'
                     : 'bg-white/5 border-white/10 hover:border-white/20 hover:bg-white/10'
@@ -435,22 +435,22 @@ export default function TeamsTable() {
         >
             <div className="h-screen bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-900 via-[#0a0a0a] to-black flex flex-col font-sans antialiased text-slate-200 overflow-hidden">
                 {/* Header */}
-                <div className="shrink-0 px-6 py-4 border-b border-white/5 bg-slate-950/50 backdrop-blur-xl z-30 shadow-lg flex items-center justify-between">
+                <div className="shrink-0 px-3 py-2.5 sm:px-4 sm:py-3 md:px-6 md:py-4 border-b border-white/5 bg-slate-950/50 backdrop-blur-xl z-30 shadow-lg flex items-center justify-between gap-2">
                     {/* Tournament Info */}
-                    <div className="flex items-center gap-6">
+                    <div className="flex items-center gap-2 sm:gap-4 md:gap-6 min-w-0">
                         <button
                             onClick={() => navigate('tournament')}
-                            className="group flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-emerald-500/10 text-slate-400 hover:text-emerald-400 rounded-xl transition-all border border-white/5 hover:border-emerald-500/20"
+                            className="group flex items-center gap-1.5 sm:gap-2 px-2.5 py-2 sm:px-4 bg-white/5 hover:bg-emerald-500/10 text-slate-400 hover:text-emerald-400 rounded-xl transition-all border border-white/5 hover:border-emerald-500/20 flex-shrink-0"
                             title="Volver a la cancha"
                         >
                             <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" />
-                            <span className="text-sm font-bold tracking-wide">TABLERO</span>
+                            <span className="hidden sm:inline text-sm font-bold tracking-wide">TABLERO</span>
                         </button>
 
-                        <div className="flex flex-col">
-                            <h1 className="text-xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white to-slate-400 uppercase tracking-tighter leading-none">{tournamentName || 'Torneo'}</h1>
+                        <div className="flex flex-col min-w-0">
+                            <h1 className="text-sm sm:text-lg md:text-xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white to-slate-400 uppercase tracking-tighter leading-none truncate">{tournamentName || 'Torneo'}</h1>
                             {(tournamentStartDate && tournamentEndDate) && (
-                                <span className="text-[10px] font-bold text-slate-500 tracking-wide mt-1">
+                                <span className="hidden sm:block text-[10px] font-bold text-slate-500 tracking-wide mt-1">
                                     {formatDate(tournamentStartDate)} - {formatDate(tournamentEndDate)}
                                 </span>
                             )}
@@ -458,8 +458,8 @@ export default function TeamsTable() {
                     </div>
 
                     {/* Controls */}
-                    <div className="flex items-center gap-3">
-                        <div className="hidden sm:flex items-center px-4 py-1.5 rounded-full bg-black/40 border border-white/5">
+                    <div className="flex items-center gap-1.5 sm:gap-3 flex-shrink-0">
+                        <div className="hidden md:flex items-center px-4 py-1.5 rounded-full bg-black/40 border border-white/5">
                             <span className="text-slate-400 text-[10px] font-bold uppercase tracking-wider">{tournamentTeams.length} Equipos</span>
                         </div>
 
@@ -470,20 +470,20 @@ export default function TeamsTable() {
                                 }
                                 setIsEditMode(!isEditMode);
                             }}
-                            className={`flex items-center justify-center gap-2 px-4 py-2 rounded-xl transition-all border text-xs font-bold uppercase tracking-wider shadow-lg
+                            className={`flex items-center justify-center gap-1.5 sm:gap-2 px-2.5 py-2 sm:px-4 rounded-xl transition-all border text-xs font-bold uppercase tracking-wider shadow-lg
                                 ${isEditMode
                                     ? 'bg-emerald-500 border-emerald-400 text-slate-950 shadow-emerald-900/40 hover:bg-emerald-400'
                                     : 'bg-white/5 border-white/5 text-slate-400 hover:bg-white/10 hover:text-white hover:border-white/10'
                                 }`}
                         >
                             {isEditMode ? <Save size={16} /> : <Pencil size={16} />}
-                            <span>{isEditMode ? 'Guardar' : 'Editar'}</span>
+                            <span className="hidden sm:inline">{isEditMode ? 'Guardar' : 'Editar'}</span>
                         </button>
                         <button
                             onClick={() => generatePDF(tournamentTeams, tournamentName)}
-                            className="flex items-center justify-center gap-2 px-4 py-2 bg-rose-500/10 text-rose-400 rounded-xl hover:bg-rose-500 hover:text-white transition-all border border-rose-500/20 hover:border-rose-500 text-xs font-bold uppercase tracking-wider"
+                            className="flex items-center justify-center gap-1.5 sm:gap-2 px-2.5 py-2 sm:px-4 bg-rose-500/10 text-rose-400 rounded-xl hover:bg-rose-500 hover:text-white transition-all border border-rose-500/20 hover:border-rose-500 text-xs font-bold uppercase tracking-wider"
                         >
-                            <FileText size={16} /> PDF
+                            <FileText size={16} /> <span className="hidden sm:inline">PDF</span>
                         </button>
                     </div>
                 </div>
@@ -497,12 +497,12 @@ export default function TeamsTable() {
                 )}
 
                 {/* Teams Container */}
-                <div className="flex-1 p-4 md:p-8 overflow-hidden flex flex-col items-center relative z-10">
+                <div className="flex-1 p-2 sm:p-4 md:p-8 overflow-hidden flex flex-col items-center relative z-10">
                     <div
                         ref={scrollContainerRef}
                         className="w-full h-full overflow-x-scroll overflow-y-hidden pb-4 custom-scrollbar scroll-smooth"
                     >
-                        <div className="flex gap-6 pb-2 min-w-max px-2 h-full">
+                        <div className="flex gap-3 sm:gap-6 pb-2 min-w-max px-1 sm:px-2 h-full">
                             {tournamentTeams.map((team) => (
                                 <DroppableTeamCard key={team.id} team={team} isEditMode={isEditMode}>
                                     {/* Glass Header */}
@@ -534,8 +534,8 @@ export default function TeamsTable() {
                                         <table className="w-full">
                                             <thead>
                                                 <tr className="text-slate-500/60 text-[9px] uppercase tracking-widest border-b border-white/5">
-                                                    <lh className="text-left py-2 px-3 font-semibold w-12">Pos</lh>
-                                                    <lh className="text-left py-2 px-3 font-semibold">Jugador</lh>
+                                                    <th className="text-left py-2 px-3 font-semibold w-12">Pos</th>
+                                                    <th className="text-left py-2 px-3 font-semibold">Jugador</th>
                                                     {isEditMode && <th className="w-8"></th>}
                                                 </tr>
                                             </thead>
@@ -597,21 +597,21 @@ export default function TeamsTable() {
                 </div>
 
                 {/* Footer Navigation */}
-                <div className="shrink-0 p-4 border-t border-white/5 bg-slate-950/80 backdrop-blur-xl flex items-center justify-center gap-8 relative z-30">
+                <div className="shrink-0 p-3 sm:p-4 border-t border-white/5 bg-slate-950/80 backdrop-blur-xl flex items-center justify-center gap-4 sm:gap-8 relative z-30">
                     <button
                         onClick={scrollLeft}
-                        className="group p-4 bg-white/5 hover:bg-emerald-600 hover:text-white rounded-full text-slate-400 border border-white/5 transition-all duration-300 shadow-lg hover:shadow-[0_0_20px_rgba(16,185,129,0.4)]"
+                        className="group p-2.5 sm:p-4 bg-white/5 hover:bg-emerald-600 hover:text-white rounded-full text-slate-400 border border-white/5 transition-all duration-300 shadow-lg hover:shadow-[0_0_20px_rgba(16,185,129,0.4)]"
                         title="Anterior"
                     >
-                        <ChevronLeft size={24} className="group-hover:-translate-x-1 transition-transform" />
+                        <ChevronLeft size={20} className="sm:w-6 sm:h-6 group-hover:-translate-x-1 transition-transform" />
                     </button>
-                    <span className="text-slate-500 text-[10px] font-bold uppercase tracking-[0.3em] select-none">Navegar Equipos</span>
+                    <span className="text-slate-500 text-[10px] font-bold uppercase tracking-[0.2em] sm:tracking-[0.3em] select-none hidden sm:block">Navegar Equipos</span>
                     <button
                         onClick={scrollRight}
-                        className="group p-4 bg-white/5 hover:bg-emerald-600 hover:text-white rounded-full text-slate-400 border border-white/5 transition-all duration-300 shadow-lg hover:shadow-[0_0_20px_rgba(16,185,129,0.4)]"
+                        className="group p-2.5 sm:p-4 bg-white/5 hover:bg-emerald-600 hover:text-white rounded-full text-slate-400 border border-white/5 transition-all duration-300 shadow-lg hover:shadow-[0_0_20px_rgba(16,185,129,0.4)]"
                         title="Siguiente"
                     >
-                        <ChevronRight size={24} className="group-hover:translate-x-1 transition-transform" />
+                        <ChevronRight size={20} className="sm:w-6 sm:h-6 group-hover:translate-x-1 transition-transform" />
                     </button>
                 </div>
 

@@ -7,7 +7,7 @@ export default function PlayerEditor() {
         <div className="min-h-screen p-4 sm:p-6 md:p-8">
             <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-6">
                 <h2 className="text-2xl md:text-3xl font-bold text-center md:text-left">Editor de Jugadores ({activePlayers.length})</h2>
-                <div className="flex gap-2 w-full md:w-auto">
+                <div className="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
                     <button onClick={reset} className="flex-1 md:flex-none px-4 py-2 bg-slate-800 rounded hover:bg-slate-700 transition">Volver</button>
                     <button onClick={createMatches} className="flex-1 md:flex-none px-4 py-2 bg-emerald-600 rounded font-bold hover:bg-emerald-500 transition">Generar Partidos</button>
                 </div>

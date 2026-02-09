@@ -29,7 +29,7 @@ export default function PushNotification() {
                 pointer-events-auto
                 bg-slate-900/95 backdrop-blur-xl
                 border border-emerald-500/30
-                rounded-xl px-5 py-3
+                rounded-xl px-4 py-3 sm:px-5 max-w-[calc(100vw-2rem)]
                 shadow-[0_0_30px_-10px_rgba(16,185,129,0.4)]
                 flex items-center gap-3
                 ${isExiting ? 'animate-push-out' : 'animate-push-in'}

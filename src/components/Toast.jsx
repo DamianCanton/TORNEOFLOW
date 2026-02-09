@@ -50,7 +50,7 @@ function Toast({ toast, onRemove }) {
             rounded-xl px-4 py-3
             shadow-2xl
             flex items-center gap-3
-            min-w-[280px] max-w-[400px]
+            min-w-0 w-full sm:min-w-[280px] sm:w-auto max-w-[400px]
             ${isExiting ? 'animate-slide-out' : 'animate-slide-in'}
         `}>
             <div className={`flex-shrink-0 p-2 rounded-lg ${styles.iconBg}`}>
@@ -70,7 +70,7 @@ export default function ToastContainer() {
     if (toasts.length === 0) return null;
 
     return (
-        <div className="fixed top-6 right-6 z-[200] flex flex-col gap-3 pointer-events-none">
+        <div className="fixed top-4 left-4 right-4 sm:left-auto sm:right-6 sm:top-6 z-[200] flex flex-col gap-3 pointer-events-none">
             {toasts.map(toast => (
                 <Toast
                     key={toast.id}

@@ -79,7 +79,7 @@ export default function Home() {
     };
 
     return (
-        <div className="flex flex-col items-center justify-center min-h-screen p-6 relative bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-900 via-[#0a0a0a] to-black overflow-hidden font-sans text-slate-200 selection:bg-emerald-500/30 selection:text-white">
+        <div className="flex flex-col items-center justify-center min-h-screen p-4 sm:p-6 relative bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-900 via-[#0a0a0a] to-black overflow-hidden font-sans text-slate-200 selection:bg-emerald-500/30 selection:text-white">
 
             {/* Background Atmosphere */}
             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-3xl h-64 bg-emerald-500/10 blur-[120px] rounded-full pointer-events-none"></div>
@@ -122,7 +122,7 @@ export default function Home() {
                         </div>
 
                         <div className="space-y-2">
-                            <div className="grid grid-cols-2 gap-4">
+                            <div className="grid grid-cols-2 gap-2 sm:gap-4">
                                 <div className="space-y-1.5">
                                     <label className="text-[10px] uppercase font-bold tracking-widest text-slate-500 ml-1">Inicio</label>
                                     <input
@@ -155,7 +155,7 @@ export default function Home() {
                     <div className="space-y-1.5">
                         <label className="text-[10px] uppercase font-bold tracking-widest text-slate-500 ml-1">Jugadores</label>
                         <textarea
-                            className={`w-full p-4 bg-black/30 rounded-xl border text-white min-h-[160px] placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all text-sm font-mono leading-relaxed resize-none custom-scrollbar ${errors.players ? 'border-rose-500/50' : 'border-white/10'}`}
+                            className={`w-full p-4 bg-black/30 rounded-xl border text-white min-h-[120px] sm:min-h-[160px] placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all text-sm font-mono leading-relaxed resize-none custom-scrollbar ${errors.players ? 'border-rose-500/50' : 'border-white/10'}`}
                             placeholder={"Luis (ARQ)\nCarlos (DEF)\nAna (MED)\nPedro (DEL)"}
                             value={inputPlayers}
                             onChange={(e) => { setInputPlayers(e.target.value); clearError('players'); }}
@@ -177,7 +177,7 @@ export default function Home() {
                     </button>
 
                     {/* Secondary Actions */}
-                    <div className="grid grid-cols-2 gap-4 pt-2">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4 pt-2">
                         <div className="relative group">
                             <input
                                 type="file"
@@ -210,7 +210,7 @@ export default function Home() {
             {/* Subtle Demo Link */}
             <button
                 onClick={loadDemoData}
-                className="fixed bottom-6 right-6 text-slate-600 text-[10px] font-bold uppercase tracking-widest hover:text-emerald-500 transition-colors opacity-50 hover:opacity-100"
+                className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 text-slate-600 text-[10px] font-bold uppercase tracking-widest hover:text-emerald-500 transition-colors opacity-50 hover:opacity-100"
             >
                 Cargar Datos Demo
             </button>
