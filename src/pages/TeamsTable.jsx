@@ -1,144 +1,19 @@
 import { useState, useRef } from 'react';
 import useAppStore from '../store';
-import { ArrowLeft, FileText, Pencil, Save, ArrowRightLeft, ChevronLeft, ChevronRight, Crown } from 'lucide-react';
+import { ArrowLeft, FileText, Pencil, Save, ChevronLeft, ChevronRight } from 'lucide-react';
 import { generatePDF } from '../utils/pdfGenerator';
 import { recalculateTeamStats } from '../utils/tournamentMaker';
 import { isPositionCompatible } from '../utils/positionUtils';
-import { DndContext, useDraggable, useDroppable, closestCenter, PointerSensor, useSensor, useSensors, DragOverlay } from '@dnd-kit/core';
+import { DndContext, closestCenter, PointerSensor, useSensor, useSensors, DragOverlay } from '@dnd-kit/core';
 
-// Draggable Player Row
-function DraggableRow({ player, id, isEditMode, onSwapClick, onCaptainClick, teamId, origin, idx, isBeingDragged, isCaptain }) {
-    const { attributes, listeners, setNodeRef, transform } = useDraggable({
-        id: id,
-        data: { player, teamId, origin, idx },
-        disabled: !isEditMode || player.vacante
-    });
+// Shared Components
+import SwapPlayerModal from '../components/shared/SwapPlayerModal';
+import Button from '../components/ui/Button';
 
-    const isStarter = origin === 'starter';
-    const isDT = player.role === 'DT';
-    const isARQ = player.role === 'ARQ';
+// Features (TeamsTable)
+import DraggableRow from '../components/features/teams-table/DraggableRow';
+import DroppableTeamCard from '../components/features/teams-table/DroppableTeamCard';
 
-    // Show placeholder when being dragged
-    if (isBeingDragged) {
-        return (
-            <DroppableRow id={id} isEditMode={isEditMode}>
-                <tr className="border-t border-dashed border-emerald-500/50 bg-emerald-500/10 h-10">
-                    <td colSpan={isEditMode ? 4 : 2} className="text-center text-emerald-400 text-xs font-medium animate-pulse">
-                        Moviendo...
-                    </td>
-                </tr>
-            </DroppableRow>
-        );
-    }
-
-    return (
-        <DroppableRow id={id} isEditMode={isEditMode}>
-            <tr
-                ref={setNodeRef}
-                {...(isEditMode && !player.vacante ? listeners : {})}
-                {...attributes}
-                className={`border-t border-white/5 transition-all
-                    ${isDT ? 'bg-indigo-500/10' : ''}
-                    ${player.vacante ? 'bg-red-500/10' : ''}
-                    ${isCaptain ? 'bg-amber-500/10' : ''}
-                    ${!isStarter ? 'hover:bg-white/5' : 'hover:bg-white/5'}
-                    ${isEditMode && !player.vacante ? 'cursor-grab active:cursor-grabbing hover:bg-white/10' : ''}
-                `}
-            >
-                <td className="py-2.5 px-3 w-[50px]">
-                    <div className="flex items-center gap-1">
-                        {isCaptain && (
-                            <Crown size={12} className="text-amber-400 flex-shrink-0" />
-                        )}
-                        <span className={`inline-flex items-center justify-center h-6 w-11 rounded-md text-[10px] font-bold tracking-wider shadow-sm
-                            ${isDT ? 'bg-indigo-500/20 text-indigo-300' :
-                                isARQ ? 'bg-yellow-500/20 text-yellow-300' :
-                                    isCaptain ? 'bg-amber-500/20 text-amber-300' :
-                                        isStarter ? 'bg-slate-500/20 text-slate-300' : 'bg-slate-600/20 text-slate-400'}
-                         `}>
-                            {isStarter ? player.role : (player.position || player.role)}
-                        </span>
-                    </div>
-                </td>
-                <td className={`py-2.5 px-3 font-medium text-xs sm:text-sm leading-tight ${isStarter ? 'text-white' : 'text-slate-300'}`}>
-                    <span className="flex items-center gap-1.5">
-                        {player.vacante ? (
-                            <span className="text-red-400/80 italic text-xs font-normal">{isDT ? 'Falta DT' : 'Vacante'}</span>
-                        ) : (
-                            <>
-                                {player.name}
-                                {isCaptain && <span className="text-[9px] text-amber-400 font-bold">(C)</span>}
-                                {player.isOutOfPosition && <span className="text-[9px] text-amber-400 font-bold">({player.position})</span>}
-                            </>
-                        )}
-                    </span>
-                </td>
-                {isEditMode && (
-                    <td className="py-2.5 px-1 text-right w-16">
-                        <div className="flex items-center justify-end gap-0.5">
-                            {!player.vacante && !isDT && (
-                                <button
-                                    onClick={(e) => { e.stopPropagation(); onCaptainClick(); }}
-                                    className={`p-1.5 rounded-lg transition ${isCaptain
-                                        ? 'text-amber-400 bg-amber-500/20'
-                                        : 'text-slate-500 hover:text-amber-400 hover:bg-amber-500/10'}`}
-                                    title={isCaptain ? 'Quitar capitán' : 'Hacer capitán'}
-                                >
-                                    <Crown size={14} />
-                                </button>
-                            )}
-                            {!player.vacante && (
-                                <button
-                                    onClick={(e) => { e.stopPropagation(); onSwapClick(); }}
-                                    className="p-1.5 text-slate-500 hover:text-emerald-400 hover:bg-emerald-500/10 rounded-lg transition"
-                                    title="Mover a otro equipo"
-                                >
-                                    <ArrowRightLeft size={14} />
-                                </button>
-                            )}
-                        </div>
-                    </td>
-                )}
-            </tr>
-        </DroppableRow>
-    );
-}
-
-// Droppable wrapper for rows
-function DroppableRow({ id, isEditMode, children }) {
-    const { setNodeRef, isOver } = useDroppable({
-        id: `drop-${id}`,
-        data: { dropId: id }
-    });
-
-    return (
-        <tbody ref={setNodeRef} className={`transition-colors ${isOver && isEditMode ? 'bg-emerald-500/10' : ''}`}>
-            {children}
-        </tbody>
-    );
-}
-
-// Droppable Team Card
-function DroppableTeamCard({ team, children, isEditMode }) {
-    const { setNodeRef, isOver } = useDroppable({
-        id: `team-${team.id}`,
-        data: { teamId: team.id }
-    });
-
-    return (
-        <div
-            ref={setNodeRef}
-            className={`flex-shrink-0 w-[85vw] sm:w-80 backdrop-blur-xl rounded-2xl border shadow-xl overflow-hidden transition-all duration-300 flex flex-col
-                ${isOver && isEditMode
-                    ? 'border-emerald-500/50 bg-emerald-500/5 ring-1 ring-emerald-500/30 scale-[1.01]'
-                    : 'bg-white/5 border-white/10 hover:border-white/20 hover:bg-white/10'
-                }
-            `}
-        >
-            {children}
-        </div>
-    );
-}
 
 export default function TeamsTable() {
     const { tournamentTeams, setTournamentTeams, navigate, tournamentName, tournamentStartDate, tournamentEndDate, addToast, showPushNotification } = useAppStore();
@@ -540,23 +415,21 @@ export default function TeamsTable() {
                                                     {isEditMode && <th className="w-8"></th>}
                                                 </tr>
                                             </thead>
-                                            <tbody className="divide-y divide-white/5">
-                                                {team.starters.map((player, idx) => (
-                                                    <DraggableRow
-                                                        key={`starter-${team.id}-${idx}`}
-                                                        id={`starter-${team.id}-${idx}`}
-                                                        player={player}
-                                                        isEditMode={isEditMode}
-                                                        teamId={team.id}
-                                                        origin="starter"
-                                                        idx={idx}
-                                                        isBeingDragged={draggedId === `starter-${team.id}-${idx}`}
-                                                        onSwapClick={() => setSwapModal({ player, teamId: team.id, origin: 'starter', idx })}
-                                                        onCaptainClick={() => handleCaptainToggle(team.id, player.id, 'starter', idx)}
-                                                        isCaptain={player.isCaptain}
-                                                    />
-                                                ))}
-                                            </tbody>
+                                            {team.starters.map((player, idx) => (
+                                                <DraggableRow
+                                                    key={`starter-${team.id}-${idx}`}
+                                                    id={`starter-${team.id}-${idx}`}
+                                                    player={player}
+                                                    isEditMode={isEditMode}
+                                                    teamId={team.id}
+                                                    origin="starter"
+                                                    idx={idx}
+                                                    isBeingDragged={draggedId === `starter-${team.id}-${idx}`}
+                                                    onSwapClick={() => setSwapModal({ player, teamId: team.id, origin: 'starter', idx })}
+                                                    onCaptainClick={() => handleCaptainToggle(team.id, player.id, 'starter', idx)}
+                                                    isCaptain={player.isCaptain}
+                                                />
+                                            ))}
 
                                             {team.bench.length > 0 && (
                                                 <tbody>
@@ -572,23 +445,21 @@ export default function TeamsTable() {
                                                 </tbody>
                                             )}
 
-                                            <tbody className="divide-y divide-white/5">
-                                                {team.bench.map((player, idx) => (
-                                                    <DraggableRow
-                                                        key={`bench-${team.id}-${idx}`}
-                                                        id={`bench-${team.id}-${idx}`}
-                                                        player={player}
-                                                        isEditMode={isEditMode}
-                                                        teamId={team.id}
-                                                        origin="bench"
-                                                        idx={idx}
-                                                        isBeingDragged={draggedId === `bench-${team.id}-${idx}`}
-                                                        onSwapClick={() => setSwapModal({ player, teamId: team.id, origin: 'bench', idx })}
-                                                        onCaptainClick={() => handleCaptainToggle(team.id, player.id, 'bench', idx)}
-                                                        isCaptain={player.isCaptain}
-                                                    />
-                                                ))}
-                                            </tbody>
+                                            {team.bench.map((player, idx) => (
+                                                <DraggableRow
+                                                    key={`bench-${team.id}-${idx}`}
+                                                    id={`bench-${team.id}-${idx}`}
+                                                    player={player}
+                                                    isEditMode={isEditMode}
+                                                    teamId={team.id}
+                                                    origin="bench"
+                                                    idx={idx}
+                                                    isBeingDragged={draggedId === `bench-${team.id}-${idx}`}
+                                                    onSwapClick={() => setSwapModal({ player, teamId: team.id, origin: 'bench', idx })}
+                                                    onCaptainClick={() => handleCaptainToggle(team.id, player.id, 'bench', idx)}
+                                                    isCaptain={player.isCaptain}
+                                                />
+                                            ))}
                                         </table>
                                     </div>
                                 </DroppableTeamCard>
@@ -627,34 +498,14 @@ export default function TeamsTable() {
                 </DragOverlay>
 
                 {/* Swap Modal */}
-                {swapModal && (
-                    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-6">
-                        <div className="bg-slate-900 border border-white/10 p-6 rounded-2xl max-w-sm w-full shadow-2xl relative overflow-hidden">
-                            <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 blur-3xl rounded-full pointer-events-none"></div>
-
-                            <h3 className="text-lg font-black text-white mb-2 uppercase relative z-10">Mover Jugador</h3>
-                            <p className="text-slate-400 text-sm mb-6 relative z-10">Elige destino para <span className="text-emerald-400 font-bold">{swapModal.player.name}</span></p>
-
-                            <div className="flex flex-col gap-2 max-h-60 overflow-y-auto custom-scrollbar relative z-10">
-                                {tournamentTeams.map(t => t.id !== swapModal.teamId && (
-                                    <button
-                                        key={t.id}
-                                        onClick={() => handleTeamSwap(t.id)}
-                                        className="p-3 text-left bg-white/5 hover:bg-emerald-500/10 border border-white/5 hover:border-emerald-500/30 rounded-xl text-slate-300 hover:text-white transition-all duration-200 text-sm font-medium"
-                                    >
-                                        <span className="text-xs text-slate-500 uppercase mr-2 font-bold">A</span> {t.name}
-                                    </button>
-                                ))}
-                            </div>
-                            <button
-                                onClick={() => setSwapModal(null)}
-                                className="mt-6 w-full py-3 text-slate-500 hover:text-white text-xs font-black uppercase tracking-widest transition"
-                            >
-                                Cancelar
-                            </button>
-                        </div>
-                    </div>
-                )}
+                <SwapPlayerModal
+                    isOpen={!!swapModal}
+                    onClose={() => setSwapModal(null)}
+                    player={swapModal?.player}
+                    currentTeamId={swapModal?.teamId}
+                    teams={tournamentTeams}
+                    onSwap={handleTeamSwap}
+                />
             </div>
         </DndContext>
     );

@@ -1,13 +1,21 @@
 import { useState } from 'react';
 import useAppStore from '../store';
-import { ChevronLeft, ChevronRight, RotateCcw, FileText, Pencil, Save, ArrowRightLeft, Table2, User, Shield, Users, Shirt, Crown } from 'lucide-react';
+import { ChevronLeft, ChevronRight, RotateCcw, FileText, Pencil, Save, Table2, User, Shield } from 'lucide-react';
 import { generatePDF } from '../utils/pdfGenerator';
 import { recalculateTeamStats } from '../utils/tournamentMaker';
 import { isPositionCompatible } from '../utils/positionUtils';
-import { DndContext, useDraggable, useDroppable, DragOverlay, closestCenter, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
+import { DndContext, DragOverlay, closestCenter, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
 
-// --- Components ---
+// Shared
+import SwapPlayerModal from '../components/shared/SwapPlayerModal';
+import Button from '../components/ui/Button';
 
+// Features (TournamentRoom)
+import DraggablePlayer from '../components/features/tournament-room/DraggablePlayer';
+import BenchPlayer from '../components/features/tournament-room/BenchPlayer';
+import { FieldSlot, BenchDroppableArea } from '../components/features/tournament-room/DropZones';
+
+// Local Action Button for the top bar (kept simple here or could be moved to UI)
 function ActionButton({ onClick, icon: Icon, label, active, danger }) {
     return (
         <button
@@ -27,178 +35,6 @@ function ActionButton({ onClick, icon: Icon, label, active, danger }) {
         </button>
     );
 }
-
-function DraggablePlayer({ player, id, isEditMode, onClick, onCaptainClick, isCaptain }) {
-    const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
-        id: id,
-        data: { player, origin: 'field' },
-        disabled: !isEditMode || player.vacante
-    });
-
-    const style = transform ? {
-        transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
-        zIndex: 50
-    } : undefined;
-
-    return (
-        <div ref={setNodeRef} {...listeners} {...attributes} className={`absolute transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center z-10 ${isDragging ? 'opacity-80 scale-110 cursor-grabbing' : ''}`} style={{ ...style, top: player.top, left: player.left }}>
-
-            {/* Jersey Icon Container */}
-            <div className={`relative flex items-center justify-center transition-all duration-300 hover:scale-110 hover:drop-shadow-[0_0_15px_rgba(255,255,255,0.15)] scale-[0.65] sm:scale-[0.8] lg:scale-100
-                ${isEditMode && !player.vacante ? 'cursor-grab active:cursor-grabbing' : 'cursor-default'}
-            `}>
-                <Shirt
-                    size={player.role === 'DT' ? 56 : 48}
-                    className={`
-                        filter drop-shadow-xl
-                        ${player.vacante ? 'text-slate-800/40 fill-white/5' :
-                            player.role === 'ARQ' ? 'text-yellow-500 fill-yellow-500/10' :
-                                player.role === 'DT' ? 'text-indigo-500 fill-indigo-500/10' :
-                                    isCaptain ? 'text-amber-400 fill-amber-400/10' :
-                                        player.isOutOfPosition ? 'text-orange-500 fill-orange-500/10' : 'text-slate-200 fill-slate-200/10'
-                        }
-                    `}
-                    strokeWidth={1.5}
-                />
-
-                {/* Captain Crown */}
-                {isCaptain && (
-                    <div className="absolute -top-2 left-1/2 -translate-x-1/2">
-                        <Crown size={14} className="text-amber-400 drop-shadow-lg" fill="rgba(251,191,36,0.3)" />
-                    </div>
-                )}
-
-                {/* Transfer Button (Edit Mode) */}
-                {isEditMode && !player.vacante && (
-                    <button
-                        onPointerDown={(e) => { e.stopPropagation(); onClick && onClick(); }}
-                        className="absolute -top-1 -right-1 bg-emerald-500 hover:bg-emerald-400 text-slate-950 rounded-full p-1.5 border border-slate-900 shadow-lg transition-all hover:scale-110"
-                        title="Mover a otro equipo"
-                    >
-                        <ArrowRightLeft size={10} className="stroke-[2.5]" />
-                    </button>
-                )}
-
-                {/* Captain Button (Edit Mode) */}
-                {isEditMode && !player.vacante && player.role !== 'DT' && (
-                    <button
-                        onPointerDown={(e) => { e.stopPropagation(); onCaptainClick && onCaptainClick(); }}
-                        className={`absolute -bottom-1 -left-1 p-1 rounded-full border border-slate-900 shadow-lg transition-all
-                            ${isCaptain ? 'bg-amber-500 text-slate-950' : 'bg-slate-700 text-slate-400 hover:bg-amber-500 hover:text-slate-950'}
-                        `}
-                        title={isCaptain ? 'Quitar capitán' : 'Hacer capitán'}
-                    >
-                        <Crown size={10} />
-                    </button>
-                )}
-            </div>
-
-            {/* Name Label - Glass Pill */}
-            <div className={`mt-1 sm:mt-2 px-1.5 py-0.5 sm:px-3 sm:py-1 rounded-full flex flex-col items-center leading-none pointer-events-none
-               bg-slate-950/60 backdrop-blur-md border ${isCaptain ? 'border-amber-500/30' : 'border-white/10'} shadow-[0_4px_10px_rgba(0,0,0,0.5)]
-            `}>
-                <span className="text-[10px] sm:text-xs font-bold text-slate-100 whitespace-nowrap tracking-tight flex items-center gap-1">
-                    {player.vacante ? '?' : player.name}
-                    {isCaptain && <span className="text-amber-400 text-[8px] font-black">(C)</span>}
-                    {player.isOutOfPosition && <span className="text-amber-400 text-[8px] font-black">({player.position})</span>}
-                </span>
-                {!player.vacante && (
-                    <span className={`text-[8px] font-black uppercase tracking-[0.15em] mt-0.5
-                        ${player.role === 'ARQ' ? 'text-yellow-500' :
-                            player.role === 'DEF' ? 'text-blue-400' :
-                                player.role === 'MED' ? 'text-emerald-400' :
-                                    player.role === 'DEL' ? 'text-rose-400' : 'text-slate-500'}
-                    `}>
-                        {player.position || player.role}
-                    </span>
-                )}
-            </div>
-        </div>
-    );
-}
-
-function FieldSlot({ index, player, children }) {
-    const { setNodeRef, isOver } = useDroppable({
-        id: `slot-${index}`,
-        data: { index }
-    });
-
-    return (
-        <div ref={setNodeRef} className={`absolute transform -translate-x-1/2 -translate-y-1/2 w-10 h-10 sm:w-14 sm:h-14 lg:w-16 lg:h-16 rounded-full transition-all duration-300 ${isOver ? 'bg-emerald-500/20 scale-125 ring-2 ring-emerald-400/50 shadow-[0_0_20px_rgba(16,185,129,0.3)]' : ''}`} style={{ top: player.top, left: player.left }}>
-            {children}
-        </div>
-    );
-}
-
-function BenchPlayer({ player, id, isEditMode, onClick, onCaptainClick, isCaptain }) {
-    const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
-        id: id,
-        data: { player, origin: 'bench' },
-        disabled: !isEditMode
-    });
-
-    const style = transform ? {
-        transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
-        zIndex: 50
-    } : undefined;
-
-    return (
-        <div ref={setNodeRef} style={style} {...listeners} {...attributes} className={`
-            flex items-center gap-4 p-3 rounded-xl transition-all duration-300 group
-            ${isCaptain ? 'bg-amber-500/10 border-amber-500/30' : 'bg-white/5 border-white/5'} border hover:bg-white/10 hover:border-white/10 shadow-sm
-            ${isEditMode ? 'cursor-grab active:cursor-grabbing hover:border-emerald-500/30 hover:shadow-[0_0_15px_-5px_rgba(16,185,129,0.2)]' : ''}
-            ${isDragging ? 'opacity-50 scale-95' : ''}
-        `}>
-            {/* Bench Jersey Preview */}
-            <div className="flex-shrink-0 p-2 bg-white/5 rounded-lg border border-white/5 relative">
-                <Shirt
-                    size={16}
-                    className={isCaptain ? 'text-amber-400' : 'text-slate-400'}
-                    strokeWidth={2}
-                />
-                {isCaptain && (
-                    <Crown size={10} className="absolute -top-1 -right-1 text-amber-400" />
-                )}
-            </div>
-
-            <div className="flex flex-col flex-1 min-w-0">
-                <span className="text-slate-200 font-semibold truncate text-xs tracking-tight group-hover:text-white transition-colors flex items-center gap-1">
-                    {player.name}
-                    {isCaptain && <span className="text-amber-400 text-[9px] font-black">(C)</span>}
-                </span>
-                <span className="text-[10px] uppercase tracking-wider text-slate-500 font-bold group-hover:text-emerald-400 transition-colors">{player.position}</span>
-            </div>
-
-            {isEditMode && (
-                <div className="flex items-center gap-1">
-                    <button
-                        onPointerDown={(e) => { e.stopPropagation(); onCaptainClick && onCaptainClick(); }}
-                        className={`p-1.5 rounded-md transition ${isCaptain ? 'text-amber-400 bg-amber-500/20' : 'text-slate-600 hover:text-amber-400 hover:bg-amber-500/10'}`}
-                        title={isCaptain ? 'Quitar capitán' : 'Hacer capitán'}
-                    >
-                        <Crown size={12} />
-                    </button>
-                    <button onPointerDown={(e) => { e.stopPropagation(); onClick(); }} className="text-slate-600 hover:text-emerald-400 transition p-1.5 hover:bg-white/10 rounded-md">
-                        <ArrowRightLeft size={14} />
-                    </button>
-                </div>
-            )}
-        </div>
-    );
-}
-
-function BenchDroppableArea({ children }) {
-    const { setNodeRef, isOver } = useDroppable({
-        id: 'bench-zone'
-    });
-    return (
-        <div ref={setNodeRef} className={`rounded-xl transition-all duration-300 p-2 min-h-[80px] sm:min-h-[120px] bg-black/20 border-2 ${isOver ? 'border-dashed border-emerald-500/50 bg-emerald-500/5' : 'border-transparent'}`}>
-            {children}
-        </div>
-    );
-}
-
-// --- Main Layout ---
 
 export default function TournamentRoom() {
     const { tournamentTeams, setTournamentTeams, reset, navigate, tournamentName, tournamentStartDate, tournamentEndDate, addToast, showPushNotification } = useAppStore();
@@ -526,54 +362,30 @@ export default function TournamentRoom() {
 
                     {/* Footer Actions */}
                     <div className="p-3 sm:p-4 lg:p-6 border-t border-white/5 bg-black/20">
-                        <button
+                        <Button
                             onClick={handleToggleEditMode}
-                            className={`w-full py-3 sm:py-4 rounded-xl font-bold uppercase tracking-wide text-xs flex items-center justify-center gap-2 transition-all duration-300
+                            icon={isEditMode ? Save : Pencil}
+                            className={`w-full py-3 sm:py-4 text-xs
                                 ${isEditMode
                                     ? 'bg-emerald-500 hover:bg-emerald-400 text-slate-900 shadow-[0_0_20px_rgba(16,185,129,0.4)]'
                                     : 'bg-white/5 hover:bg-white/10 text-slate-300 border border-white/10'
                                 }
                             `}
                         >
-                            {isEditMode ? <Save size={18} /> : <Pencil size={18} />}
-                            <span>{isEditMode ? 'Guardar Cambios' : 'Modificar Equipo'}</span>
-                        </button>
+                            {isEditMode ? 'Guardar Cambios' : 'Modificar Equipo'}
+                        </Button>
                     </div>
                 </div>
 
                 {/* Swap Modal */}
-                {swapModal && (
-                    <div className="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center z-[100] p-6">
-                        <div className="bg-slate-900 border border-white/10 p-6 rounded-3xl max-w-sm w-full shadow-2xl relative overflow-hidden">
-                            {/* Decorative glow */}
-                            <div className="absolute -top-10 -right-10 w-32 h-32 bg-emerald-500/20 blur-3xl rounded-full pointer-events-none"></div>
-
-                            <h3 className="text-xl font-black text-white mb-2 uppercase relative z-10">Mover Jugador</h3>
-                            <p className="text-slate-400 text-sm mb-6 relative z-10">Elige destino para <span className="text-emerald-400 font-bold">{swapModal.player.name}</span></p>
-
-                            <div className="flex flex-col gap-2 max-h-60 overflow-y-auto custom-scrollbar relative z-10">
-                                {tournamentTeams.map(t => t.id !== currentTeam.id && (
-                                    <button
-                                        key={t.id}
-                                        onClick={() => handleTeamSwap(t.id)}
-                                        className="p-4 text-left bg-white/5 hover:bg-emerald-500/20 border border-white/5 hover:border-emerald-500/50 rounded-xl text-slate-200 hover:text-white transition-all duration-200 font-semibold text-sm group"
-                                    >
-                                        <div className="flex items-center justify-between">
-                                            <span>{t.name}</span>
-                                            <ArrowRightLeft size={16} className="opacity-0 group-hover:opacity-100 transition-opacity text-emerald-400" />
-                                        </div>
-                                    </button>
-                                ))}
-                            </div>
-                            <button
-                                onClick={() => setSwapModal(null)}
-                                className="mt-6 w-full py-3 text-slate-500 hover:text-white text-xs font-black uppercase tracking-widest transition"
-                            >
-                                Cancelar
-                            </button>
-                        </div>
-                    </div>
-                )}
+                <SwapPlayerModal
+                    isOpen={!!swapModal}
+                    onClose={() => setSwapModal(null)}
+                    player={swapModal?.player}
+                    currentTeamId={currentTeam.id}
+                    teams={tournamentTeams}
+                    onSwap={handleTeamSwap}
+                />
 
                 <DragOverlay dropAnimation={null} />
             </div>
