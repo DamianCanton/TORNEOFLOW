@@ -3,6 +3,7 @@ import useAppStore from '../store';
 import { ChevronLeft, ChevronRight, RotateCcw, FileText, Pencil, Save, ArrowRightLeft, Table2, User, Shield, Users, Shirt, Crown } from 'lucide-react';
 import { generatePDF } from '../utils/pdfGenerator';
 import { recalculateTeamStats } from '../utils/tournamentMaker';
+import { isPositionCompatible } from '../utils/positionUtils';
 import { DndContext, useDraggable, useDroppable, DragOverlay, closestCenter, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
 
 // --- Components ---
@@ -249,7 +250,7 @@ export default function TournamentRoom() {
                 if (!targetSlot.vacante) {
                     bench.push({ ...targetSlot, top: undefined, left: undefined, role: undefined, isOutOfPosition: undefined });
                 }
-                const isOutOfPosition = player.position !== 'POLI' && player.position !== targetSlot.role;
+                const isOutOfPosition = !isPositionCompatible(player.position, targetSlot.role);
                 starters[slotIdx] = {
                     ...player,
                     role: targetSlot.role, top: targetSlot.top, left: targetSlot.left,
@@ -273,8 +274,8 @@ export default function TournamentRoom() {
                 const targetIdx = parseInt(overId.split('-')[1]);
                 if (sIdx === targetIdx) return;
                 const targetPlayer = starters[targetIdx];
-                const playerOutOfPosition = player.position !== 'POLI' && player.position !== targetPlayer.role;
-                const targetOutOfPosition = targetPlayer.position !== 'POLI' && targetPlayer.position !== player.role;
+                const playerOutOfPosition = !isPositionCompatible(player.position, targetPlayer.role);
+                const targetOutOfPosition = !isPositionCompatible(targetPlayer.position, player.role);
                 starters[targetIdx] = { ...player, top: targetPlayer.top, left: targetPlayer.left, role: targetPlayer.role, isOutOfPosition: playerOutOfPosition };
                 starters[sIdx] = { ...targetPlayer, top: player.top, left: player.left, role: player.role, isOutOfPosition: targetOutOfPosition };
                 team.starters = starters;

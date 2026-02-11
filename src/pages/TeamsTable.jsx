@@ -3,6 +3,7 @@ import useAppStore from '../store';
 import { ArrowLeft, FileText, Pencil, Save, ArrowRightLeft, ChevronLeft, ChevronRight, Crown } from 'lucide-react';
 import { generatePDF } from '../utils/pdfGenerator';
 import { recalculateTeamStats } from '../utils/tournamentMaker';
+import { isPositionCompatible } from '../utils/positionUtils';
 import { DndContext, useDraggable, useDroppable, closestCenter, PointerSensor, useSensor, useSensors, DragOverlay } from '@dnd-kit/core';
 
 // Draggable Player Row
@@ -214,7 +215,7 @@ export default function TeamsTable() {
             const targetPlayer = { ...targetList[targetIdx] };
 
             if (targetPlayer.vacante) {
-                const sourceOutOfPosition = sourcePlayer.position !== 'POLI' && sourcePlayer.position !== targetPlayer.role;
+                const sourceOutOfPosition = !isPositionCompatible(sourcePlayer.position, targetPlayer.role);
                 if (targetOrigin === 'starter') {
                     targetList[targetIdx] = {
                         ...sourcePlayer,
@@ -247,8 +248,8 @@ export default function TeamsTable() {
                 }
             } else {
                 // Full swap
-                const sourceOutOfPosition = sourcePlayer.position !== 'POLI' && sourcePlayer.position !== targetPlayer.role;
-                const targetOutOfPosition = targetPlayer.position !== 'POLI' && targetPlayer.position !== sourcePlayer.role;
+                const sourceOutOfPosition = !isPositionCompatible(sourcePlayer.position, targetPlayer.role);
+                const targetOutOfPosition = !isPositionCompatible(targetPlayer.position, sourcePlayer.role);
 
                 if (activeData.origin === 'starter' && targetOrigin === 'starter') {
                     sourceList[activeData.idx] = {

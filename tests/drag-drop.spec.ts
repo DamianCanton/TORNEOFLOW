@@ -21,9 +21,9 @@ test.describe('Drag & Drop - Estructura', () => {
         // Verificar que hay jugadores visibles
         await expect(page.locator('text=EQUIPO').first()).toBeVisible();
 
-        // Debería haber posiciones visibles (DEL, MED, CEN, etc)
+        // Debería haber posiciones visibles (DEL, MED, DEF, etc)
         const content = await page.textContent('body');
-        expect(content).toMatch(/DEL|MED|CEN|DEF|ARQ/);
+        expect(content).toMatch(/DEL|MED|DEF|ARQ/);
     });
 
     test('debe tener botón de modificar equipo', async ({ page }) => {

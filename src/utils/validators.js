@@ -2,7 +2,7 @@
  * Módulo de validación centralizado para TORNEOFLOW
  */
 
-export const VALID_POSITIONS = ['ARQ', 'DEF', 'MED', 'DEL', 'POLI', 'DT', 'CEN'];
+export const VALID_POSITIONS = ['ARQ', 'DEF', 'MED', 'DEL', 'POLI', 'DT'];
 export const MIN_PLAYERS = 22;
 
 /**
@@ -56,4 +56,70 @@ export const validatePlayers = (text) => {
     }
 
     return null;
+};
+
+/**
+ * Valida un array de jugadores importados desde Excel
+ * @returns {{ valid: boolean, errors: string[] }}
+ */
+export const validateExcelPlayers = (players) => {
+    const errors = [];
+
+    if (!Array.isArray(players) || players.length === 0) {
+        return { valid: false, errors: ['El archivo no contiene jugadores.'] };
+    }
+
+    if (players.length < MIN_PLAYERS) {
+        errors.push(`Se necesitan al menos ${MIN_PLAYERS} jugadores (hay ${players.length}).`);
+    }
+
+    const names = [];
+    const duplicates = new Set();
+    const rowErrors = [];
+
+    players.forEach((player, index) => {
+        const rowNum = index + 2;
+
+        if (!player.name || String(player.name).trim() === '') {
+            rowErrors.push(`Fila ${rowNum}: falta el nombre del jugador.`);
+        } else {
+            const normalized = String(player.name).trim().toLowerCase();
+            if (names.includes(normalized)) {
+                duplicates.add(player.name);
+            }
+            names.push(normalized);
+        }
+
+        if (player.position && !VALID_POSITIONS.includes(player.position)) {
+            rowErrors.push(`Fila ${rowNum} (${player.name || '?'}): posición "${player.position}" no válida.`);
+        }
+
+        const q = Number(player.quality);
+        if (isNaN(q) || q < 1 || q > 10) {
+            rowErrors.push(`Fila ${rowNum} (${player.name || '?'}): calidad debe ser entre 1 y 10.`);
+        }
+
+        const r = Number(player.responsibility);
+        if (isNaN(r) || r < 1 || r > 10) {
+            rowErrors.push(`Fila ${rowNum} (${player.name || '?'}): responsabilidad debe ser entre 1 y 10.`);
+        }
+
+        const a = Number(player.age);
+        if (isNaN(a) || a < 10 || a > 60) {
+            rowErrors.push(`Fila ${rowNum} (${player.name || '?'}): edad debe ser entre 10 y 60.`);
+        }
+    });
+
+    if (duplicates.size > 0) {
+        errors.push(`Jugadores duplicados: ${[...duplicates].join(', ')}`);
+    }
+
+    if (rowErrors.length > 10) {
+        errors.push(...rowErrors.slice(0, 10));
+        errors.push(`...y ${rowErrors.length - 10} errores más.`);
+    } else {
+        errors.push(...rowErrors);
+    }
+
+    return { valid: errors.length === 0, errors };
 };

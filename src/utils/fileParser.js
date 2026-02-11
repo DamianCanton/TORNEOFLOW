@@ -3,9 +3,16 @@ import { normalizePosition, isInjured } from './parser';
 
 export const downloadTemplate = () => {
     const headers = ['Nombre', 'Posicion', 'Calidad', 'Responsabilidad', 'Edad', 'Lesionado'];
-    const exampleRow = ['Lionel Messi', 'DEL', 10, 10, 36, 'No'];
+    const exampleRows = [
+        ['Emiliano Martínez', 'ARQ', 9, 8, 31, 'No'],
+        ['Cuti Romero',       'DEF', 9, 7, 26, 'No'],
+        ['Enzo Fernández',    'MED', 9, 8, 23, 'No'],
+        ['Julián Álvarez',    'DEL', 9, 8, 24, 'No'],
+        ['Rodrigo De Paul',   'POLI', 8, 9, 29, 'No'],
+        ['Lionel Scaloni',    'DT',  8, 10, 46, 'No'],
+    ];
 
-    const ws = utils.aoa_to_sheet([headers, exampleRow]);
+    const ws = utils.aoa_to_sheet([headers, ...exampleRows]);
     const wb = utils.book_new();
     utils.book_append_sheet(wb, ws, "Plantilla Jugadores");
 
@@ -21,7 +28,7 @@ export const parseFile = async (file) => {
                 const workbook = read(data, { type: 'array' });
                 const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
                 const jsonData = utils.sheet_to_json(firstSheet);
-                const normalized = jsonData.map(normalizeKeys);
+                const normalized = jsonData.map(normalizeKeys).filter(p => p.name && String(p.name).trim() !== '');
                 resolve(normalized);
             } catch (err) {
                 reject(err);

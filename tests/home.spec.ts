@@ -17,46 +17,12 @@ test.describe('Página Home', () => {
 
         // Verificar que el formulario está presente
         await expect(page.getByPlaceholder('Ej: Copa de Verano 2024')).toBeVisible();
-        await expect(page.getByRole('button', { name: /comenzar torneo/i })).toBeVisible();
+        await expect(page.getByRole('button', { name: /crear torneo/i })).toBeVisible();
     });
 
-    test('debe mostrar error si no se ingresa nombre de torneo', async ({ page }) => {
-        // Hacer clic en comenzar sin datos
-        page.on('dialog', async dialog => {
-            expect(dialog.message()).toContain('nombre del torneo');
-            await dialog.dismiss();
-        });
-
-        await page.getByRole('button', { name: /comenzar torneo/i }).click();
-    });
-
-    test('debe mostrar error si no se ingresan fechas', async ({ page }) => {
-        // Ingresar solo el nombre
-        await page.getByPlaceholder('Ej: Copa de Verano 2024').fill('Mi Torneo');
-
-        page.on('dialog', async dialog => {
-            expect(dialog.message()).toContain('fechas');
-            await dialog.dismiss();
-        });
-
-        await page.getByRole('button', { name: /comenzar torneo/i }).click();
-    });
-
-    test('debe mostrar error si no se ingresan jugadores', async ({ page }) => {
-        // Ingresar nombre y fechas
-        await page.getByPlaceholder('Ej: Copa de Verano 2024').fill('Mi Torneo');
-
-        // Llenar fechas
-        const dateInputs = page.locator('input[type="date"]');
-        await dateInputs.first().fill('2024-01-01');
-        await dateInputs.last().fill('2024-12-31');
-
-        page.on('dialog', async dialog => {
-            expect(dialog.message()).toContain('jugadores');
-            await dialog.dismiss();
-        });
-
-        await page.getByRole('button', { name: /comenzar torneo/i }).click();
+    test('debe tener botón crear torneo deshabilitado sin jugadores importados', async ({ page }) => {
+        const crearBtn = page.getByRole('button', { name: /crear torneo/i });
+        await expect(crearBtn).toBeDisabled();
     });
 
     test('debe cargar datos demo y navegar a TournamentRoom automáticamente', async ({ page }) => {
@@ -69,7 +35,6 @@ test.describe('Página Home', () => {
         await page.waitForTimeout(500);
 
         // Verificar que estamos en TournamentRoom (ya no en home)
-        // Nota: el texto puede ser "Torneo Demo" o "TORNEO DEMO" dependiendo del estilo
         await expect(page.locator('text=/torneo demo/i').first()).toBeVisible();
         await expect(page.locator('text=/EQUIPO/i').first()).toBeVisible();
     });

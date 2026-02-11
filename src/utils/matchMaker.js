@@ -1,6 +1,6 @@
 /**
  * Genera partidos balanceados dividiendo jugadores en 2 equipos
- * Usa distribución serpentina por score para balance
+ * Usa distribución serpentina por posición y score para balance
  *
  * @param {Array} players - Lista de jugadores con quality y responsibility
  * @returns {{ matches: Array, reserves: Array }}
@@ -14,30 +14,39 @@ export const generateMatches = (players) => {
     const coaches = players.filter(p => p.position === 'DT');
     const fieldPlayers = players.filter(p => p.position !== 'DT');
 
-    // Calcular score para ordenar
+    // Calcular score de toda la lista para ordenar
     const getScore = (p) => (p.quality || 5) * 0.7 + (p.responsibility || 3) * 0.3;
 
-    // Ordenar por score descendente
-    const sorted = [...fieldPlayers].sort((a, b) => getScore(b) - getScore(a));
+    // Crear pools por posición
+    const pools = { ARQ: [], DEF: [], MED: [], DEL: [], POLI: [] };
+    fieldPlayers.forEach(p => {
+        const pos = pools[p.position] ? p.position : 'POLI';
+        pools[pos].push(p);
+    });
 
-    // Distribuir en 2 equipos usando serpentina
     const teamA = [];
     const teamB = [];
 
-    sorted.forEach((player, idx) => {
-        // Serpentina: 0→A, 1→B, 2→B, 3→A, 4→A, 5→B...
-        const cycle = Math.floor(idx / 2);
-        const pos = idx % 2;
+    // Distribuir por pools con serpentina individual
+    const order = ['ARQ', 'DEL', 'DEF', 'MED', 'POLI'];
 
-        if (cycle % 2 === 0) {
-            // Ciclo par: A, B
-            if (pos === 0) teamA.push(player);
-            else teamB.push(player);
-        } else {
-            // Ciclo impar: B, A
-            if (pos === 0) teamB.push(player);
-            else teamA.push(player);
-        }
+    order.forEach((role, poolIndex) => {
+        const sortedPool = pools[role].sort((a, b) => getScore(b) - getScore(a));
+        // Alternar: pools pares A primero, pools impares B primero
+        const firstTeam = poolIndex % 2 === 0 ? teamA : teamB;
+        const secondTeam = poolIndex % 2 === 0 ? teamB : teamA;
+
+        sortedPool.forEach((player, idx) => {
+            const cycle = Math.floor(idx / 2);
+            const pos = idx % 2;
+            if (cycle % 2 === 0) {
+                if (pos === 0) firstTeam.push(player);
+                else secondTeam.push(player);
+            } else {
+                if (pos === 0) secondTeam.push(player);
+                else firstTeam.push(player);
+            }
+        });
     });
 
     // Asignar DTs si hay

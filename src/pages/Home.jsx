@@ -1,16 +1,16 @@
 import { useState } from 'react';
 import useAppStore from '../store';
 import { parseFile, downloadTemplate } from '../utils/fileParser';
-import { validateTournamentName, validateDates, validatePlayers } from '../utils/validators';
-import { Upload, Download, Play, Trophy, AlertCircle } from 'lucide-react';
+import { validateTournamentName, validateDates, validateExcelPlayers } from '../utils/validators';
+import { Upload, Download, Play, Trophy, AlertCircle, CheckCircle } from 'lucide-react';
 import { mockPlayersSimple } from '../data/mockPlayers';
 
 export default function Home() {
     const {
-        inputPlayers,
-        setInputPlayers,
         syncPlayersFromText,
         importPlayers,
+        createTournament,
+        pendingPlayers,
         tournamentName,
         tournamentStartDate,
         tournamentEndDate,
@@ -22,12 +22,14 @@ export default function Home() {
     const [errors, setErrors] = useState({
         tournamentName: '',
         dates: '',
-        players: '',
+        excelPlayers: [],
         fileUpload: ''
     });
 
     const clearError = (field) => {
-        if (errors[field]) {
+        if (field === 'excelPlayers') {
+            if (errors.excelPlayers.length > 0) setErrors(prev => ({ ...prev, excelPlayers: [] }));
+        } else if (errors[field]) {
             setErrors(prev => ({ ...prev, [field]: '' }));
         }
     };
@@ -36,6 +38,7 @@ export default function Home() {
         const file = e.target.files[0];
         if (!file) return;
         clearError('fileUpload');
+        clearError('excelPlayers');
         try {
             const players = await parseFile(file);
             importPlayers(players);
@@ -46,6 +49,7 @@ export default function Home() {
                 fileUpload: 'Error al leer el archivo. Asegurate que sea un Excel valido.'
             }));
         }
+        e.target.value = '';
     };
 
     const loadDemoData = () => {
@@ -57,7 +61,7 @@ export default function Home() {
         syncPlayersFromText(mockPlayersSimple);
     };
 
-    const handleStart = () => {
+    const handleCreateTournament = () => {
         const newErrors = {};
 
         const nameError = validateTournamentName(tournamentName);
@@ -66,17 +70,19 @@ export default function Home() {
         const datesError = validateDates(tournamentStartDate, tournamentEndDate);
         if (datesError) newErrors.dates = datesError;
 
-        const playersError = validatePlayers(inputPlayers);
-        if (playersError) newErrors.players = playersError;
+        const excelResult = validateExcelPlayers(pendingPlayers);
+        if (!excelResult.valid) newErrors.excelPlayers = excelResult.errors;
 
         if (Object.keys(newErrors).length > 0) {
             setErrors(prev => ({ ...prev, ...newErrors }));
             return;
         }
 
-        setErrors({});
-        syncPlayersFromText(inputPlayers.trim());
+        setErrors({ tournamentName: '', dates: '', excelPlayers: [], fileUpload: '' });
+        createTournament();
     };
+
+    const hasPendingPlayers = pendingPlayers.length > 0;
 
     return (
         <div className="flex flex-col items-center justify-center min-h-screen p-4 sm:p-6 relative bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-900 via-[#0a0a0a] to-black overflow-hidden font-sans text-slate-200 selection:bg-emerald-500/30 selection:text-white">
@@ -94,7 +100,7 @@ export default function Home() {
                     <h1 className="text-4xl sm:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-b from-white to-slate-400 tracking-tighter drop-shadow-sm">
                         TORNEO FLOW
                     </h1>
-                    <p className="text-slate-500 font-medium tracking-wide">Gestor de torneos inteligente</p>
+                    <p className="text-slate-500 font-medium tracking-wide">Creador de equipos inteligente</p>
                 </div>
 
                 {/* Form Container */}
@@ -127,7 +133,7 @@ export default function Home() {
                                     <label className="text-[10px] uppercase font-bold tracking-widest text-slate-500 ml-1">Inicio</label>
                                     <input
                                         type="date"
-                                        className={`w-full px-4 py-3 bg-black/30 rounded-xl border text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all text-sm font-medium ${errors.dates ? 'border-rose-500/50' : 'border-white/10'}`}
+                                        className={`w-full px-4 py-3 bg-black/30 rounded-xl border text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all text-sm font-medium [&::-webkit-calendar-picker-indicator]:filter [&::-webkit-calendar-picker-indicator]:invert ${errors.dates ? 'border-rose-500/50' : 'border-white/10'}`}
                                         value={tournamentStartDate}
                                         onChange={(e) => { setTournamentStartDate(e.target.value); clearError('dates'); }}
                                     />
@@ -136,7 +142,7 @@ export default function Home() {
                                     <label className="text-[10px] uppercase font-bold tracking-widest text-slate-500 ml-1">Fin</label>
                                     <input
                                         type="date"
-                                        className={`w-full px-4 py-3 bg-black/30 rounded-xl border text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all text-sm font-medium ${errors.dates ? 'border-rose-500/50' : 'border-white/10'}`}
+                                        className={`w-full px-4 py-3 bg-black/30 rounded-xl border text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all text-sm font-medium [&::-webkit-calendar-picker-indicator]:filter [&::-webkit-calendar-picker-indicator]:invert ${errors.dates ? 'border-rose-500/50' : 'border-white/10'}`}
                                         value={tournamentEndDate}
                                         onChange={(e) => { setTournamentEndDate(e.target.value); clearError('dates'); }}
                                     />
@@ -151,33 +157,8 @@ export default function Home() {
                         </div>
                     </div>
 
-                    {/* Players Input */}
-                    <div className="space-y-1.5">
-                        <label className="text-[10px] uppercase font-bold tracking-widest text-slate-500 ml-1">Jugadores</label>
-                        <textarea
-                            className={`w-full p-4 bg-black/30 rounded-xl border text-white min-h-[120px] sm:min-h-[160px] placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all text-sm font-mono leading-relaxed resize-none custom-scrollbar ${errors.players ? 'border-rose-500/50' : 'border-white/10'}`}
-                            placeholder={"Luis (ARQ)\nCarlos (DEF)\nAna (MED)\nPedro (DEL)"}
-                            value={inputPlayers}
-                            onChange={(e) => { setInputPlayers(e.target.value); clearError('players'); }}
-                        />
-                        {errors.players && (
-                            <div className="flex items-center gap-2 mt-2 px-3 py-2 bg-rose-500/10 border border-rose-500/20 rounded-lg animate-fade-in">
-                                <AlertCircle size={14} className="text-rose-400 flex-shrink-0" />
-                                <span className="text-rose-400 text-xs font-medium">{errors.players}</span>
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Primary Action */}
-                    <button
-                        className="w-full bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-400 hover:to-green-500 text-white py-4 rounded-xl font-bold uppercase tracking-widest text-sm shadow-[0_0_25px_-5px_rgba(16,185,129,0.5)] hover:shadow-[0_0_35px_-5px_rgba(16,185,129,0.7)] hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2 group border-t border-white/20"
-                        onClick={handleStart}
-                    >
-                        <Play size={18} className="fill-white" /> Comenzar Torneo
-                    </button>
-
-                    {/* Secondary Actions */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4 pt-2">
+                    {/* Excel Import Actions */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4">
                         <div className="relative group">
                             <input
                                 type="file"
@@ -204,6 +185,40 @@ export default function Home() {
                             <span className="text-rose-400 text-xs font-medium">{errors.fileUpload}</span>
                         </div>
                     )}
+
+                    {/* Imported Players Preview */}
+                    {hasPendingPlayers && (
+                        <div className="flex items-center gap-3 px-4 py-3 bg-emerald-500/10 border border-emerald-500/20 rounded-xl animate-fade-in">
+                            <CheckCircle size={18} className="text-emerald-400 flex-shrink-0" />
+                            <span className="text-emerald-300 text-sm font-medium">
+                                {pendingPlayers.length} jugadores importados
+                            </span>
+                        </div>
+                    )}
+
+                    {/* Excel Player Validation Errors */}
+                    {errors.excelPlayers?.length > 0 && (
+                        <div className="space-y-1 px-3 py-2 bg-rose-500/10 border border-rose-500/20 rounded-lg animate-fade-in">
+                            {errors.excelPlayers.map((err, i) => (
+                                <div key={i} className="flex items-start gap-2">
+                                    <AlertCircle size={14} className="text-rose-400 flex-shrink-0 mt-0.5" />
+                                    <span className="text-rose-400 text-xs font-medium">{err}</span>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+
+                    {/* Primary Action - Create Tournament */}
+                    <button
+                        className={`w-full py-4 rounded-xl font-bold uppercase tracking-widest text-sm flex items-center justify-center gap-2 group border-t border-white/20 transition-all ${hasPendingPlayers
+                                ? 'bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-400 hover:to-green-500 text-white shadow-[0_0_25px_-5px_rgba(16,185,129,0.5)] hover:shadow-[0_0_35px_-5px_rgba(16,185,129,0.7)] hover:scale-[1.02] active:scale-[0.98]'
+                                : 'bg-white/5 text-slate-500 cursor-not-allowed'
+                            }`}
+                        onClick={handleCreateTournament}
+                        disabled={!hasPendingPlayers}
+                    >
+                        <Play size={18} className={hasPendingPlayers ? 'fill-white' : ''} /> Crear Torneo
+                    </button>
                 </div>
             </div>
 

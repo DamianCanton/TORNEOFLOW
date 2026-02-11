@@ -113,6 +113,6 @@ test.describe('Generación de Equipos', () => {
         expect(bodyContent?.length).toBeGreaterThan(500);
 
         // Debería incluir posiciones de jugadores
-        expect(bodyContent).toMatch(/DEL|MED|CEN|DEF|ARQ/);
+        expect(bodyContent).toMatch(/DEL|MED|DEF|ARQ/);
     });
 });

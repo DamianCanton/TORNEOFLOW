@@ -98,7 +98,7 @@ test.describe('Responsividad en Navegación', () => {
         await page.goto('/');
 
         await expect(page.getByText('TORNEO FLOW')).toBeVisible();
-        await expect(page.getByRole('button', { name: /comenzar torneo/i })).toBeVisible();
+        await expect(page.getByRole('button', { name: /crear torneo/i })).toBeVisible();
     });
 
     test('debe adaptarse a viewport tablet', async ({ page }) => {

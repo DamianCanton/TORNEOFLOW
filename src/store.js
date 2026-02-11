@@ -1,11 +1,11 @@
 import { create } from 'zustand';
-import { generateMatches } from './utils/matchMaker';
 import { generateTournament } from './utils/tournamentMaker';
 import { parsePlayers } from './utils/parser';
 
 const useAppStore = create((set, get) => ({
     inputPlayers: '',
     activePlayers: [],
+    pendingPlayers: [],
     matches: [],
     tournamentTeams: [],
     reserves: [],
@@ -14,7 +14,6 @@ const useAppStore = create((set, get) => ({
     tournamentStartDate: '',
     tournamentEndDate: '',
 
-    setInputPlayers: (text) => set({ inputPlayers: text }),
     setTournamentName: (name) => set({ tournamentName: name }),
     setTournamentStartDate: (date) => set({ tournamentStartDate: date }),
     setTournamentEndDate: (date) => set({ tournamentEndDate: date }),
@@ -25,7 +24,6 @@ const useAppStore = create((set, get) => ({
     },
 
     importPlayers: (players) => {
-        // Ensure every player has an ID and basics
         const processed = players.map(p => ({
             id: crypto.randomUUID(),
             quality: 5,
@@ -34,7 +32,19 @@ const useAppStore = create((set, get) => ({
             position: 'POLI',
             ...p
         }));
-        get().processPlayers(processed, '');
+        const seen = new Set();
+        const unique = processed.filter(p => {
+            const key = `${p.name}-${p.position}-${p.quality}-${p.responsibility}-${p.age}`.toLowerCase();
+            if (seen.has(key)) return false;
+            seen.add(key);
+            return true;
+        });
+        set({ pendingPlayers: unique });
+    },
+
+    createTournament: () => {
+        const { pendingPlayers, processPlayers } = get();
+        processPlayers(pendingPlayers, '');
     },
 
     processPlayers: (players, textSource) => {
@@ -43,14 +53,15 @@ const useAppStore = create((set, get) => ({
             const teams = generateTournament(players);
             set({ inputPlayers: textSource, activePlayers: players, tournamentTeams: teams, currentView: 'tournament' });
         } else {
-            set({ inputPlayers: textSource, activePlayers: players, currentView: 'editor' });
+            const teams = generateTournament(players);
+            set({ inputPlayers: textSource, activePlayers: players, tournamentTeams: teams, currentView: 'tournament' });
         }
     },
 
     createMatches: () => {
         const { activePlayers } = get();
-        const { matches, reserves } = generateMatches(activePlayers);
-        set({ matches, reserves, currentView: 'matchRoom' });
+        const teams = generateTournament(activePlayers);
+        set({ tournamentTeams: teams, currentView: 'tournament' });
     },
 
     addPlayer: (player) => set((state) => ({ activePlayers: [...state.activePlayers, player] })),
@@ -58,7 +69,7 @@ const useAppStore = create((set, get) => ({
     updatePlayer: (updatedPlayer) => set((state) => ({ activePlayers: state.activePlayers.map((p) => (p.id === updatedPlayer.id ? updatedPlayer : p)) })),
     navigate: (view) => set({ currentView: view }),
     setTournamentTeams: (teams) => set({ tournamentTeams: teams }),
-    reset: () => set({ currentView: 'home', matches: [], tournamentTeams: [], activePlayers: [], inputPlayers: '', tournamentName: '', tournamentStartDate: '', tournamentEndDate: '' }),
+    reset: () => set({ currentView: 'home', matches: [], tournamentTeams: [], activePlayers: [], pendingPlayers: [], inputPlayers: '', tournamentName: '', tournamentStartDate: '', tournamentEndDate: '' }),
 
     // Toast notifications
     toasts: [],

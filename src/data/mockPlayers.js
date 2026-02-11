@@ -3,8 +3,8 @@
 
 export const mockPlayersSimple = `Lionel Messi, DEL, 10, 5, 36
 Dibu Martínez, ARQ, 10, 5, 31
-Cuti Romero, CEN, 9, 4, 26
-Nicolás Otamendi, CEN, 8, 5, 36
+Cuti Romero, DEF, 9, 4, 26
+Nicolás Otamendi, DEF, 8, 5, 36
 Nahuel Molina, DEF, 8, 4, 26
 Nicolás Tagliafico, DEF, 7, 5, 31
 Rodrigo De Paul, MED, 9, 5, 29
@@ -13,8 +13,8 @@ Alexis Mac Allister, MED, 9, 5, 25
 Ángel Di María, MED, 10, 5, 36
 Julián Álvarez, DEL, 9, 5, 24
 Franco Armani, ARQ, 7, 5, 37
-Lisandro Martínez, CEN, 9, 4, 26
-Germán Pezzella, CEN, 7, 5, 33
+Lisandro Martínez, DEF, 9, 4, 26
+Germán Pezzella, DEF, 7, 5, 33
 Gonzalo Montiel, DEF, 7, 4, 27
 Marcos Acuña, DEF, 8, 4, 32
 Leandro Paredes, MED, 8, 4, 29
@@ -24,16 +24,16 @@ Gio Lo Celso, MED, 8, 3, 27
 Lautaro Martínez, DEL, 9, 4, 26
 Paulo Dybala, DEL, 9, 3, 30
 Gerónimo Rulli, ARQ, 7, 4, 32
-Juan Foyth, CEN, 7, 4, 26
-Lucas Martínez Quarta, CEN, 7, 4, 28
+Juan Foyth, DEF, 7, 4, 26
+Lucas Martínez Quarta, DEF, 7, 4, 28
 Facundo Medina, DEF, 7, 3, 25
 Valentín Barco, DEF, 6, 3, 19
 Thiago Almada, MED, 8, 4, 22
 Alejandro Garnacho, DEL, 8, 3, 19
 Ángel Correa, DEL, 7, 5, 29
 Walter Benítez, ARQ, 7, 4, 31
-Nehuén Pérez, CEN, 7, 4, 23
-Marcos Senesi, CEN, 7, 4, 26
+Nehuén Pérez, DEF, 7, 4, 23
+Marcos Senesi, DEF, 7, 4, 26
 Juan Musso, ARQ, 7, 3, 29
 Lucas Ocampos, MED, 7, 4, 29
 Emiliano Buendía, MED, 7, 3, 27
@@ -46,8 +46,8 @@ Edinson Cavani, DEL, 8, 5, 37
 Miguel Merentiel, DEL, 7, 5, 28
 Chiquito Romero, ARQ, 7, 4, 37
 Luis Advíncula, DEF, 7, 5, 34
-Marcos Rojo, CEN, 6, 3, 34
-Nicolás Figal, CEN, 6, 3, 29
+Marcos Rojo, DEF, 6, 3, 34
+Nicolás Figal, DEF, 6, 3, 29
 Frank Fabra, DEF, 5, 2, 33
 Pol Fernández, MED, 6, 4, 32
 Jorman Campuzano, MED, 5, 3, 27
@@ -64,18 +64,18 @@ Nacho Fernández, MED, 7, 5, 34
 Rodrigo Aliendro, MED, 7, 5, 33
 Nicolás Fonseca, MED, 5, 3, 25
 Enzo Díaz, DEF, 6, 4, 28
-Leandro González Pírez, CEN, 6, 4, 32
-Paulo Díaz, CEN, 8, 5, 29
+Leandro González Pírez, DEF, 6, 4, 32
+Paulo Díaz, DEF, 8, 5, 29
 Agustín Sant'Anna, DEF, 6, 3, 26
-Sebastián Boselli, CEN, 6, 4, 20
+Sebastián Boselli, DEF, 6, 4, 20
 Milton Casco, DEF, 6, 5, 35
 Matías Kranevitter, MED, 6, 4, 30
 Santiago Simón, MED, 6, 4, 21
 Agustín Palavecino, MED, 5, 3, 27
 Manuel Lanzini, MED, 6, 3, 31
 Pity Martínez, MED, 6, 2, 30
-Ramiro Funes Mori, CEN, 5, 3, 33
-David Martínez, CEN, 5, 3, 26
+Ramiro Funes Mori, DEF, 5, 3, 33
+David Martínez, DEF, 5, 3, 26
 Agustín Ruberto, DEL, 6, 3, 18
 Ian Subiabre, DEL, 6, 3, 17
 Tobías Leiva, MED, 5, 3, 20
@@ -97,7 +97,7 @@ José Paradela, MED, 6, 3, 25
 Tomás Conechny, DEL, 6, 4, 26
 Hernán López Muñoz, MED, 7, 4, 23
 Tadeo Allende, DEL, 7, 4, 25
-Gastón Hernández, CEN, 7, 5, 26
+Gastón Hernández, DEF, 7, 5, 26
 Adam Bareiro, DEL, 7, 5, 27
 Nahuel Barrios, MED, 6, 4, 25
 Malcom Braida, DEF, 7, 5, 26
@@ -108,16 +108,16 @@ Jamon Jaminton, DEL, 7, 4, 23
 Roger Martínez, DEL, 7, 3, 29
 Juanfer Quintero, MED, 8, 3, 31
 Adrián Martínez, DEL, 8, 5, 31
-Santiago Sosa, CEN, 7, 4, 25
+Santiago Sosa, DEF, 7, 4, 25
 Agustín Almendra, MED, 6, 2, 24
 Baltasar Rodríguez, MED, 6, 4, 20
 Gabriel Arias, ARQ, 7, 4, 36
 Facundo Cambeses, ARQ, 6, 4, 27
 Gastón Martirena, DEF, 6, 3, 24
 Gabriel Rojas, DEF, 7, 4, 26
-Nazareno Colombo, CEN, 6, 4, 25
-Marco Di Cesare, CEN, 7, 4, 22
-Agustín García Basso, CEN, 7, 5, 31
+Nazareno Colombo, DEF, 6, 4, 25
+Marco Di Cesare, DEF, 7, 4, 22
+Agustín García Basso, DEF, 7, 5, 31
 Bruno Zuculini, MED, 6, 5, 30
 Maxi Moralez, MED, 6, 5, 37
 Santiago Solari, MED, 6, 4, 26
@@ -125,14 +125,14 @@ Maxi Salas, DEL, 6, 5, 26
 Johan Carbonero, DEL, 6, 2, 24
 Julio Buffarini, DEF, 5, 5, 35
 Éver Banega, MED, 7, 4, 35
-Ian Glavinovich, CEN, 6, 4, 22
+Ian Glavinovich, DEF, 6, 4, 22
 Ángelo Martino, DEF, 6, 4, 25
 Francisco González, DEL, 6, 3, 22
 Juan Ramírez, DEL, 6, 4, 22
 Ramiro Macagno, ARQ, 6, 4, 27
 Jorge Broun, ARQ, 7, 5, 37
-Facundo Mallo, CEN, 7, 5, 28
-Carlos Quintana, CEN, 7, 5, 36
+Facundo Mallo, DEF, 7, 5, 28
+Carlos Quintana, DEF, 7, 5, 36
 Agustín Sández, DEF, 6, 4, 23
 Kevin Ortiz, MED, 6, 5, 23
 Tomás O'Connor, MED, 6, 4, 20
@@ -141,15 +141,15 @@ Ignacio Malcorra, MED, 7, 5, 36
 Abel Hernández, DEL, 6, 3, 33
 Luca Langoni, DEL, 7, 4, 22
 Exequiel Zeballos, DEL, 7, 3, 21
-Nicolás Valentini, CEN, 7, 4, 23
-Aaron Anselmino, CEN, 7, 4, 18
+Nicolás Valentini, DEF, 7, 4, 23
+Aaron Anselmino, DEF, 7, 4, 18
 Lucas Blondel, DEF, 7, 4, 27
 Lautaro Blanco, DEF, 7, 5, 25
 Marcelo Saracchi, DEF, 6, 3, 25
 Javier García, ARQ, 5, 4, 37
 Vicente Taborda, MED, 6, 4, 22
 Norberto Briasco, DEL, 5, 3, 28
-Juan Manuel Fedorco, CEN, 6, 5, 23
+Juan Manuel Fedorco, DEF, 6, 5, 23
 Santiago Montiel, DEF, 6, 3, 23
 Damián Batallini, MED, 6, 5, 27
 Diego Tarcia, MED, 5, 3, 20
@@ -157,8 +157,8 @@ Matías Giménez, DEL, 6, 3, 25
 Gabriel Ávalos, DEL, 6, 4, 33
 Rodrigo Rey, ARQ, 8, 5, 33
 Mauricio Isla, DEF, 7, 5, 35
-Ayrton Costa, CEN, 6, 4, 24
-Joaquín Laso, CEN, 5, 4, 33
+Ayrton Costa, DEF, 6, 4, 24
+Joaquín Laso, DEF, 5, 4, 33
 Iván Marcone, MED, 7, 5, 33
 Federico Mancuello, MED, 6, 5, 35
 Lucas González, MED, 6, 4, 23
