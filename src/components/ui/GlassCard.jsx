@@ -4,7 +4,7 @@ export default function GlassCard({ children, className = '', hoverEffect = fals
     return (
         <div className={`
             bg-white/5 backdrop-blur-xl border border-white/10 
-            shadow-2xl relative overflow-hidden
+            shadow-2xl relative overflow-hidden rounded-3xl
             ${hoverEffect ? 'transition-all duration-300 hover:bg-white/10 hover:border-white/20' : ''}
             ${className}
         `}>

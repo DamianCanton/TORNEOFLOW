@@ -9,7 +9,7 @@ import Layout from '../components/ui/Layout';
 import GlassCard from '../components/ui/GlassCard';
 import Input from '../components/ui/Input';
 import Button from '../components/ui/Button';
-import { GradientTitle } from '../components/ui/Typography';
+import { GradientTitle, SectionTitle } from '../components/ui/Typography';
 import FileImporter from '../components/features/home/FileImporter';
 
 export default function Home() {
@@ -75,7 +75,7 @@ export default function Home() {
 
     return (
         <Layout className="flex flex-col items-center justify-center p-4 sm:p-6">
-            <div className="relative z-10 w-full max-w-xl flex flex-col gap-12 animate-fade-in">
+            <div className="relative z-10 w-full max-w-2xl flex flex-col gap-6 animate-fade-in">
 
                 {/* Header */}
                 <div className="text-center space-y-6">
@@ -87,9 +87,10 @@ export default function Home() {
                 </div>
 
                 {/* Form Container */}
-                <GlassCard className="p-8 sm:p-10 space-y-10">
+                <GlassCard className="p-10 space-y-8">
                     {/* Tournament Info Inputs */}
                     <div className="space-y-6">
+                        <SectionTitle>Detalles del Torneo</SectionTitle>
                         <Input
                             label="Nombre"
                             placeholder="Ej: Copa de Verano 2024"
@@ -115,8 +116,12 @@ export default function Home() {
                         </div>
                     </div>
 
+                    {/* Divider */}
+                    <div className="w-full h-px bg-gradient-to-r from-transparent via-white/10 to-transparent my-4"></div>
+
                     {/* File Importer */}
-                    <div className="mt-10">
+                    <div className="space-y-6">
+                        <SectionTitle>Agregar Jugadores</SectionTitle>
                         <FileImporter
                             onImport={importPlayers}
                             onError={(msg) => setErrors(prev => ({ ...prev, fileUpload: msg }))}

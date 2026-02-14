@@ -29,26 +29,56 @@ export default function FileImporter({
 
     return (
         <div className="space-y-6">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8">
-                <div className="relative group">
-                    <input
-                        type="file"
-                        accept=".xlsx,.xls,.csv"
-                        onChange={handleFileUpload}
-                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20"
-                    />
-                    <Button variant="secondary" className="w-full text-sm py-4" icon={Upload}>
-                        Importar Excel
-                    </Button>
+            <div className={`
+                border-2 rounded-3xl p-8 flex flex-col items-center justify-center gap-6 
+                transition-all group relative cursor-pointer
+                ${pendingPlayersCount > 0
+                    ? 'border-emerald-500/50 bg-emerald-500/10 border-solid'
+                    : 'border-white/10 bg-white/5 hover:bg-white/10 border-dashed'}
+            `}>
+                <input
+                    type="file"
+                    accept=".xlsx,.xls,.csv"
+                    onChange={handleFileUpload}
+                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-40"
+                    title={pendingPlayersCount > 0 ? "Cambiar archivo" : "Seleccionar archivo"}
+                />
+
+                <div className={`
+                    w-16 h-16 rounded-2xl flex items-center justify-center transition-transform group-hover:scale-110
+                    ${pendingPlayersCount > 0 ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20' : 'bg-emerald-500/20 text-emerald-400'}
+                `}>
+                    {pendingPlayersCount > 0 ? <CheckCircle size={32} /> : <Upload size={32} />}
                 </div>
+
+                <div className="text-center space-y-2">
+                    <h3 className={`text-lg font-bold ${pendingPlayersCount > 0 ? 'text-emerald-400' : 'text-white'}`}>
+                        {pendingPlayersCount > 0 ? '¡Jugadores Cargados!' : 'Importar Jugadores'}
+                    </h3>
+                    <p className="text-slate-400 text-sm">
+                        {pendingPlayersCount > 0
+                            ? `${pendingPlayersCount} jugadores listos para el torneo`
+                            : 'Arrastra tu archivo Excel aquí o haz clic para buscar'}
+                    </p>
+                </div>
+
                 <Button
                     variant="secondary"
-                    className="w-full text-sm py-4"
-                    onClick={downloadTemplate}
-                    icon={Download}
+                    className={`z-10 relative pointer-events-none ${pendingPlayersCount > 0 ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : ''}`}
+                    icon={pendingPlayersCount > 0 ? Upload : Download}
                 >
-                    Descargar Modelo
+                    {pendingPlayersCount > 0 ? 'Cambiar Excel' : 'Seleccionar Archivo'}
                 </Button>
+            </div>
+
+            <div className="flex justify-center">
+                <button
+                    onClick={downloadTemplate}
+                    className="text-xs text-slate-500 hover:text-emerald-400 transition-colors flex items-center gap-2 uppercase tracking-wider font-bold"
+                >
+                    <Download size={14} />
+                    Descargar Plantilla Modelo
+                </button>
             </div>
 
             {/* File Upload Error */}
@@ -56,16 +86,6 @@ export default function FileImporter({
                 <div className="flex items-center gap-2 px-3 py-2 bg-rose-500/10 border border-rose-500/20 rounded-lg animate-fade-in">
                     <AlertCircle size={14} className="text-rose-400 flex-shrink-0" />
                     <span className="text-rose-400 text-xs font-medium">{errors.fileUpload}</span>
-                </div>
-            )}
-
-            {/* Imported Players Preview */}
-            {pendingPlayersCount > 0 && (
-                <div className="flex items-center gap-3 px-4 py-3 bg-emerald-500/10 border border-emerald-500/20 rounded-xl animate-fade-in">
-                    <CheckCircle size={18} className="text-emerald-400 flex-shrink-0" />
-                    <span className="text-emerald-300 text-sm font-medium">
-                        {pendingPlayersCount} jugadores importados
-                    </span>
                 </div>
             )}
 

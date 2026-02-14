@@ -22,7 +22,7 @@ export default function Input({
             <input
                 type={type}
                 className={`
-                    w-full px-4 py-3 bg-black/30 rounded-xl border text-white 
+                    w-full px-4 py-3 bg-black/30 rounded-2xl border text-white 
                     placeholder:text-slate-600 
                     focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 
                     transition-all font-medium 

@@ -9,7 +9,7 @@ export default function Button({
     type = 'button',
     icon: Icon = null
 }) {
-    const baseStyles = "rounded-xl font-bold uppercase tracking-widest text-sm flex items-center justify-center gap-2 transition-all group";
+    const baseStyles = "rounded-2xl font-bold uppercase tracking-widest text-sm flex items-center justify-center gap-2 transition-all group";
 
     // Variant styles
     const variants = {

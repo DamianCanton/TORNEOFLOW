@@ -16,7 +16,8 @@ export function GradientTitle({ children, className = '', size = 'large' }) {
 
 export function SectionTitle({ children, className = '' }) {
     return (
-        <h2 className={`text-[10px] uppercase font-bold tracking-widest text-slate-500 ${className}`}>
+        <h2 className={`text-xs sm:text-sm uppercase font-bold tracking-[0.2em] text-emerald-400/80 mb-4 flex items-center gap-2 ${className}`}>
+            <span className="w-8 h-[1px] bg-emerald-500/50 inline-block"></span>
             {children}
         </h2>
     );
