@@ -104,10 +104,6 @@ export const validateExcelPlayers = (players) => {
             rowErrors.push(`Fila ${rowNum} (${player.name || '?'}): responsabilidad debe ser entre 1 y 10.`);
         }
 
-        const a = Number(player.age);
-        if (isNaN(a) || a < 10 || a > 60) {
-            rowErrors.push(`Fila ${rowNum} (${player.name || '?'}): edad debe ser entre 10 y 60.`);
-        }
     });
 
     if (duplicates.size > 0) {
