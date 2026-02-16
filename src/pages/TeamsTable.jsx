@@ -90,7 +90,7 @@ export default function TeamsTable() {
             const targetPlayer = { ...targetList[targetIdx] };
 
             if (targetPlayer.vacante) {
-                const sourceOutOfPosition = !isPositionCompatible(sourcePlayer.position, targetPlayer.role);
+                const sourceOutOfPosition = !isPositionCompatible(sourcePlayer.position, targetPlayer.role, sourcePlayer.altPosition);
                 if (targetOrigin === 'starter') {
                     targetList[targetIdx] = {
                         ...sourcePlayer,
@@ -123,8 +123,8 @@ export default function TeamsTable() {
                 }
             } else {
                 // Full swap
-                const sourceOutOfPosition = !isPositionCompatible(sourcePlayer.position, targetPlayer.role);
-                const targetOutOfPosition = !isPositionCompatible(targetPlayer.position, sourcePlayer.role);
+                const sourceOutOfPosition = !isPositionCompatible(sourcePlayer.position, targetPlayer.role, sourcePlayer.altPosition);
+                const targetOutOfPosition = !isPositionCompatible(targetPlayer.position, sourcePlayer.role, targetPlayer.altPosition);
 
                 if (activeData.origin === 'starter' && targetOrigin === 'starter') {
                     sourceList[activeData.idx] = {

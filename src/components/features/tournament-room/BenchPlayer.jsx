@@ -35,6 +35,7 @@ export default function BenchPlayer({ player, id, isEditMode, onClick, onCaptain
 
             <div className="flex flex-col flex-1 min-w-0">
                 <span className="text-slate-200 font-semibold truncate text-xs tracking-tight group-hover:text-white transition-colors flex items-center gap-1">
+                    {player.number && <span className="text-slate-500 text-[10px]">#{player.number}</span>}
                     {player.name}
                     {isCaptain && <span className="text-amber-400 text-[9px] font-black">(C)</span>}
                 </span>

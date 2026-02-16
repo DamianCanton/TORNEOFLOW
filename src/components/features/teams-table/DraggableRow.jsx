@@ -66,10 +66,15 @@ export default function DraggableRow({
                     ${isEditMode && !player.vacante ? 'cursor-grab active:cursor-grabbing hover:bg-white/10' : ''}
                 `}
             >
-                <td className="py-2.5 px-3 w-[50px]">
+                <td className="py-2.5 px-3 w-[60px]">
                     <div className="flex items-center gap-1">
                         {isCaptain && (
                             <Crown size={12} className="text-amber-400 flex-shrink-0" />
+                        )}
+                        {player.number && (
+                            <span className="text-[10px] font-bold text-slate-500 w-4 text-right flex-shrink-0">
+                                {player.number}
+                            </span>
                         )}
                         <span className={`inline-flex items-center justify-center h-6 w-11 rounded-md text-[10px] font-bold tracking-wider shadow-sm
                             ${isDT ? 'bg-indigo-500/20 text-indigo-300' :

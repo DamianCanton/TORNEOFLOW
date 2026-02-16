@@ -30,11 +30,13 @@ const useAppStore = create((set, get) => ({
             responsibility: 3,
             age: 25,
             position: 'POLI',
+            altPosition: null,
+            number: null,
             ...p
         }));
         const seen = new Set();
         const unique = processed.filter(p => {
-            const key = `${p.name}-${p.position}-${p.quality}-${p.responsibility}-${p.age}`.toLowerCase();
+            const key = `${p.name}-${p.position}-${p.age}-${p.number || ''}`.toLowerCase();
             if (seen.has(key)) return false;
             seen.add(key);
             return true;

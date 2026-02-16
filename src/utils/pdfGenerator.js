@@ -86,7 +86,8 @@ function generateTeamTable(doc, teams, startY, marginX, availableWidth, maxHeigh
             if (rowIdx < allPlayers.length) {
                 const player = allPlayers[rowIdx];
                 const captainMark = player.isCaptain ? ' (C)' : '';
-                row.push(`${rowIdx + 1} ${player.name.toUpperCase()}${captainMark}`);
+                const displayNum = player.number || (rowIdx + 1);
+                row.push(`${displayNum} ${player.name.toUpperCase()}${captainMark}`);
             } else {
                 row.push(''); // Empty cell for teams with fewer players
             }

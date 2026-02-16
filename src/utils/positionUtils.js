@@ -1,6 +1,8 @@
-export const isPositionCompatible = (playerPosition, slotRole) => {
+export const isPositionCompatible = (playerPosition, slotRole, altPosition = null) => {
     if (playerPosition === 'POLI') return true;
-    return playerPosition === slotRole;
+    if (playerPosition === slotRole) return true;
+    if (altPosition && altPosition === slotRole) return true;
+    return false;
 };
 
 export const SLOT_FILL_PRIORITY = {

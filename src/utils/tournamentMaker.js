@@ -179,22 +179,27 @@ export const generateTournament = (allPlayers, options = {}) => {
             // Buscar por prioridad: match exacto → POLI
             const priorities = SLOT_FILL_PRIORITY[slot.role] || [slot.role, 'POLI'];
             for (const candidateRole of priorities) {
-                foundIdx = squad.findIndex(p => p.role === candidateRole && !p.injured);
+                foundIdx = squad.findIndex(p => p.role === candidateRole);
                 if (foundIdx !== -1) break;
+            }
+
+            // Buscar por posición alternativa
+            if (foundIdx === -1) {
+                foundIdx = squad.findIndex(p => p.altPosition === slot.role && p.role !== 'ARQ');
             }
 
             // Fallback: cualquier jugador de campo (nunca ARQ para slot de campo)
             if (foundIdx === -1 && squad.length > 0) {
                 if (slot.role === 'ARQ') {
-                    foundIdx = squad.findIndex(p => !p.injured);
+                    foundIdx = squad.findIndex(() => true);
                 } else {
-                    foundIdx = squad.findIndex(p => p.role !== 'ARQ' && !p.injured);
+                    foundIdx = squad.findIndex(p => p.role !== 'ARQ');
                 }
             }
 
             if (foundIdx !== -1) {
                 const p = squad.splice(foundIdx, 1)[0];
-                const outOfPosition = !isPositionCompatible(p.position, slot.role);
+                const outOfPosition = !isPositionCompatible(p.position, slot.role, p.altPosition);
                 team.starters.push({ ...p, ...slot, isOutOfPosition: outOfPosition });
             } else {
                 team.starters.push({

@@ -94,14 +94,15 @@ export const validateExcelPlayers = (players) => {
             rowErrors.push(`Fila ${rowNum} (${player.name || '?'}): posición "${player.position}" no válida.`);
         }
 
-        const q = Number(player.quality);
-        if (isNaN(q) || q < 1 || q > 10) {
-            rowErrors.push(`Fila ${rowNum} (${player.name || '?'}): calidad debe ser entre 1 y 10.`);
+        if (player.altPosition && !VALID_POSITIONS.includes(player.altPosition)) {
+            rowErrors.push(`Fila ${rowNum} (${player.name || '?'}): posición alternativa "${player.altPosition}" no válida.`);
         }
 
-        const r = Number(player.responsibility);
-        if (isNaN(r) || r < 1 || r > 10) {
-            rowErrors.push(`Fila ${rowNum} (${player.name || '?'}): responsabilidad debe ser entre 1 y 10.`);
+        if (player.number !== null && player.number !== undefined) {
+            const n = Number(player.number);
+            if (!Number.isInteger(n) || n < 1) {
+                rowErrors.push(`Fila ${rowNum} (${player.name || '?'}): Nº debe ser un número entero positivo.`);
+            }
         }
 
     });

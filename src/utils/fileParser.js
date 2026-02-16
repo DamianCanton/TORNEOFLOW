@@ -1,18 +1,27 @@
 import { read, utils, writeFile } from 'xlsx';
-import { normalizePosition, isInjured } from './parser';
+import { normalizePosition } from './parser';
 
 export const downloadTemplate = () => {
-    const headers = ['Nombre', 'Posicion', 'Calidad', 'Responsabilidad', 'Edad', 'Lesionado'];
+    const headers = ['Nº', 'Jugador', 'Edad', 'Pto.', 'Alt.'];
     const exampleRows = [
-        ['Emiliano Martínez', 'ARQ', 9, 8, 31, 'No'],
-        ['Cuti Romero',       'DEF', 9, 7, 26, 'No'],
-        ['Enzo Fernández',    'MED', 9, 8, 23, 'No'],
-        ['Julián Álvarez',    'DEL', 9, 8, 24, 'No'],
-        ['Rodrigo De Paul',   'POLI', 8, 9, 29, 'No'],
-        ['Lionel Scaloni',    'DT',  8, 10, 46, 'No'],
+        [1,  'Emiliano Martínez', 31, 1,  ''],
+        [2,  'Cuti Romero',       26, 3,  ''],
+        [3,  'Enzo Fernández',    23, 7,  6],
+        [4,  'Julián Álvarez',    24, 11, 10],
+        [5,  'Rodrigo De Paul',   29, '',  ''],
+        [6,  'Lionel Scaloni',    46, 'DT', ''],
     ];
 
     const ws = utils.aoa_to_sheet([headers, ...exampleRows]);
+
+    ws['!cols'] = [
+        { wch: 5 },
+        { wch: 25 },
+        { wch: 6 },
+        { wch: 6 },
+        { wch: 6 },
+    ];
+
     const wb = utils.book_new();
     utils.book_append_sheet(wb, ws, "Plantilla Jugadores");
 
@@ -28,7 +37,7 @@ export const parseFile = async (file) => {
                 const workbook = read(data, { type: 'array' });
                 const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
                 const jsonData = utils.sheet_to_json(firstSheet);
-                const normalized = jsonData.map(normalizeKeys).filter(p => p.name && String(p.name).trim() !== '');
+                const normalized = jsonData.map((row, index) => normalizeKeys(row, index)).filter(p => p.name && String(p.name).trim() !== '');
                 resolve(normalized);
             } catch (err) {
                 reject(err);
@@ -39,18 +48,42 @@ export const parseFile = async (file) => {
     });
 };
 
-const normalizeKeys = (row) => {
+const normalizeKeys = (row, index) => {
     const normalized = {};
     Object.keys(row).forEach(key => {
         const lowerKey = key.toLowerCase().trim();
         const val = row[key];
 
-        if (['nombre', 'name', 'jugador'].some(k => lowerKey.includes(k))) normalized.name = val;
-        else if (['posicion', 'position', 'rol', 'puesto'].some(k => lowerKey.includes(k))) normalized.position = normalizePosition(val);
-        else if (['calidad', 'quality', 'nivel'].some(k => lowerKey.includes(k))) normalized.quality = parseInt(val) || 5;
-        else if (['responsabilidad', 'responsibility', 'resp'].some(k => lowerKey.includes(k))) normalized.responsibility = parseInt(val) || 3;
-        else if (['edad', 'age'].some(k => lowerKey.includes(k))) normalized.age = parseInt(val) || 25;
-        else if (['lesionado', 'injured', 'estado'].some(k => lowerKey.includes(k))) normalized.injured = isInjured(val);
+        // Nº (número de lista)
+        if (lowerKey === 'n' || lowerKey === 'nº' || lowerKey === 'nro' || lowerKey === 'numero' || lowerKey === 'number' || lowerKey === '#') {
+            normalized.number = parseInt(val) || null;
+        }
+        // Jugador (nombre)
+        else if (['jugador', 'nombre', 'name', 'player'].some(k => lowerKey.includes(k))) {
+            normalized.name = val;
+        }
+        // Edad
+        else if (['edad', 'age'].some(k => lowerKey.includes(k))) {
+            normalized.age = parseInt(val) || 25;
+        }
+        // Pto. (posición principal - numérico 1-11 o string)
+        else if (lowerKey === 'pto' || lowerKey === 'pto.' || ['posicion', 'position', 'puesto', 'rol'].some(k => lowerKey.includes(k))) {
+            normalized.position = normalizePosition(val);
+        }
+        // Alt. (posición alternativa - numérico 1-11 o string)
+        else if (lowerKey === 'alt' || lowerKey === 'alt.' || lowerKey === 'alternativa' || lowerKey === 'alt position' || lowerKey === 'suplente') {
+            normalized.altPosition = (val === null || val === undefined || String(val).trim() === '') ? null : normalizePosition(val);
+        }
     });
+
+    // Auto-asignar número si no viene
+    if (!normalized.number) {
+        normalized.number = index + 1;
+    }
+
+    // Defaults para campos internos
+    normalized.quality = 5;
+    normalized.responsibility = 3;
+
     return normalized;
 };
