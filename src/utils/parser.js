@@ -1,9 +1,9 @@
 // Mapeo de posición numérica (1-11) a posición del sistema
 export const NUMERIC_POSITION_MAP = {
-    1: 'ARQ',
-    2: 'DEF', 3: 'DEF', 4: 'DEF', 5: 'DEF',
-    6: 'MED', 7: 'MED', 8: 'MED', 9: 'MED',
-    10: 'DEL', 11: 'DEL'
+    1:  'ARQ',
+    2:  'DEF', 3: 'DEF', 4: 'DEF', 6: 'DEF',
+    5:  'MED', 7: 'MED', 8: 'MED', 10: 'MED',
+    9:  'DEL', 11: 'DEL'
 };
 
 export const numericToPosition = (val) => {
