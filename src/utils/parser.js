@@ -54,7 +54,8 @@ export const normalizePosition = (rawPos) => {
     const numResult = numericToPosition(rawPos);
     if (numResult) return numResult;
 
-    const clean = String(rawPos).toUpperCase().trim();
+    const clean = String(rawPos).toUpperCase().trim()
+        .normalize('NFD').replace(/[\u0300-\u036f]/g, ''); // quita acentos
 
     // Mapeo de alias completos (palabras en español e inglés)
     const aliases = {
@@ -62,14 +63,18 @@ export const normalizePosition = (rawPos) => {
         'DEFENSOR': 'DEF', 'DEFENSA': 'DEF', 'CENTRAL': 'DEF', 'LATERAL': 'DEF', 'ZAGUERO': 'DEF',
         'MEDIOCAMPISTA': 'MED', 'MEDIO': 'MED', 'VOLANTE': 'MED', 'CENTROCAMPISTA': 'MED',
         'DELANTERO': 'DEL', 'ATACANTE': 'DEL', 'PUNTA': 'DEL', 'FORWARD': 'DEL',
-        'POLIVALENTE': 'POLI', 'POLIFUNCIONAL': 'POLI', 'COMODIN': 'POLI'
+        'POLIVALENTE': 'POLI', 'POLIFUNCIONAL': 'POLI', 'COMODIN': 'POLI',
+        'SUPLENTE': 'SUPL', 'SUPL': 'SUPL', 'SUPL.': 'SUPL', 'SUB': 'SUPL'
     };
     if (aliases[clean]) return aliases[clean];
 
-    // Allow POLI explicitly or fallback to it
+    // SUPL explícito
+    if (clean.startsWith('SUPL') || clean.startsWith('SUB')) return 'SUPL';
+
+    // POLI fallback
     if (clean.startsWith('POL')) return 'POLI';
 
-    // DT is now a valid position
+    // DT
     if (clean === 'DT' || clean.startsWith('DIR')) return 'DT';
 
     const valid = ['ARQ', 'MED', 'DEL', 'DEF'];

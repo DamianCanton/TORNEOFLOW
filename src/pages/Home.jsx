@@ -71,6 +71,16 @@ export default function Home() {
         createTournament();
     };
 
+    const handleImport = (players) => {
+        const result = validateExcelPlayers(players);
+        if (!result.valid) {
+            setErrors(prev => ({ ...prev, excelPlayers: result.errors }));
+            return;
+        }
+        clearError('excelPlayers');
+        importPlayers(players);
+    };
+
     const hasPendingPlayers = pendingPlayers.length > 0;
 
     return (
@@ -123,7 +133,7 @@ export default function Home() {
                     <div className="space-y-6">
                         <SectionTitle>Agregar Jugadores</SectionTitle>
                         <FileImporter
-                            onImport={importPlayers}
+                            onImport={handleImport}
                             onError={(msg) => setErrors(prev => ({ ...prev, fileUpload: msg }))}
                             clearError={clearError}
                             pendingPlayersCount={pendingPlayers.length}

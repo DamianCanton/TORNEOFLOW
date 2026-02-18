@@ -2,7 +2,7 @@
  * Módulo de validación centralizado para TORNEOFLOW
  */
 
-export const VALID_POSITIONS = ['ARQ', 'DEF', 'MED', 'DEL', 'POLI', 'DT'];
+export const VALID_POSITIONS = ['ARQ', 'DEF', 'MED', 'DEL', 'POLI', 'DT', 'SUPL'];
 export const MIN_PLAYERS = 22;
 
 /**

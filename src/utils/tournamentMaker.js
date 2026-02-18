@@ -10,9 +10,10 @@ const FORMATION = [
 ];
 
 export const generateTournament = (allPlayers, options = {}) => {
-    // Separate DTs from Players
+    // Separate DTs, SUPLs y jugadores de campo
     const coaches = allPlayers.filter(p => p.position === 'DT');
-    const players = allPlayers.filter(p => p.position !== 'DT');
+    const forcedBench = allPlayers.filter(p => p.position === 'SUPL');
+    const players = allPlayers.filter(p => p.position !== 'DT' && p.position !== 'SUPL');
 
     // Constantes de configuración
     const MIN_PER_TEAM = 11;   // Mínimo: solo titulares (formación completa)
@@ -212,12 +213,20 @@ export const generateTournament = (allPlayers, options = {}) => {
         });
         team.bench = squad;
 
-        const totalScore = team.players.reduce((acc, p) => acc + getScore(p), 0);
-        const totalAge = team.players.reduce((acc, p) => acc + (p.age || 0), 0);
+        const allTeamPlayers = [...team.players, ...team.bench];  // stats antes de SUPL
+        const totalScore = allTeamPlayers.reduce((acc, p) => acc + getScore(p), 0);
+        const totalAge = allTeamPlayers.reduce((acc, p) => acc + (p.age || 0), 0);
         team.stats = {
             score: totalScore.toFixed(1),
-            avgAge: team.players.length ? (totalAge / team.players.length).toFixed(1) : 0
+            avgAge: allTeamPlayers.length ? (totalAge / allTeamPlayers.length).toFixed(1) : 0
         };
+    });
+
+    // Distribuir SUPL forzados al banco de cada equipo (después de armar titulares)
+    const sortedForcedBench = forcedBench.sort((a, b) => getScore(b) - getScore(a));
+    sortedForcedBench.forEach((player, i) => {
+        const teamIdx = i % TEAMS_COUNT;
+        teams[teamIdx].bench.push({ ...player, role: 'SUPL' });
     });
 
     // Asignar DTs (1 por equipo si hay suficientes)
