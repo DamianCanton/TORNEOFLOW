@@ -16,7 +16,7 @@ export default function Home() {
     const {
         syncPlayersFromText,
         importPlayers,
-        createTournament,
+        navigate,
         pendingPlayers,
         tournamentName,
         tournamentStartDate,
@@ -68,7 +68,7 @@ export default function Home() {
         }
 
         setErrors({ tournamentName: '', dates: '', excelPlayers: [], fileUpload: '' });
-        createTournament();
+        navigate('playerSetup');
     };
 
     const handleImport = (players) => {

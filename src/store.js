@@ -71,6 +71,7 @@ const useAppStore = create((set, get) => ({
     updatePlayer: (updatedPlayer) => set((state) => ({ activePlayers: state.activePlayers.map((p) => (p.id === updatedPlayer.id ? updatedPlayer : p)) })),
     navigate: (view) => set({ currentView: view }),
     setTournamentTeams: (teams) => set({ tournamentTeams: teams }),
+    updatePendingPlayers: (players) => set({ pendingPlayers: players }),
     reset: () => set({ currentView: 'home', matches: [], tournamentTeams: [], activePlayers: [], pendingPlayers: [], inputPlayers: '', tournamentName: '', tournamentStartDate: '', tournamentEndDate: '' }),
 
     // Toast notifications

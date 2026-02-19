@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import useAppStore from '../store';
-import { ChevronLeft, ChevronRight, RotateCcw, FileText, Pencil, Save, Table2, User, Shield } from 'lucide-react';
+import { ChevronLeft, ChevronRight, RotateCcw, FileText, Pencil, Save, Table2, User, Shield, Users } from 'lucide-react';
 import { generatePDF } from '../utils/pdfGenerator';
 import { recalculateTeamStats } from '../utils/tournamentMaker';
 import { isPositionCompatible } from '../utils/positionUtils';
@@ -230,6 +230,7 @@ export default function TournamentRoom() {
                         {/* Actions */}
                         <div className="flex items-center gap-1.5 sm:gap-3 flex-shrink-0">
                             <ActionButton onClick={reset} icon={RotateCcw} label="Inicio" />
+                            <ActionButton onClick={() => navigate('playerSetup')} icon={Users} label="Jugadores" />
                             <ActionButton onClick={() => navigate('teamsTable')} icon={Table2} label="Tabla" />
                             <ActionButton onClick={() => generatePDF(tournamentTeams)} icon={FileText} label="PDF" />
                         </div>
