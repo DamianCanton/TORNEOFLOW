@@ -54,6 +54,11 @@ export default function PlayerSetup() {
         setErrors([]);
 
         const changes = getChangesSummary(pendingPlayers, editablePlayers);
+        if (changes.length === 0) {
+            updatePendingPlayers(editablePlayers);
+            createTournament();
+            return;
+        }
         setConfirmModal({ open: true, changes });
     };
 
