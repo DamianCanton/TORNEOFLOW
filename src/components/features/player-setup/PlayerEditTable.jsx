@@ -9,8 +9,13 @@ export default function PlayerEditTable({ players, onPlayerChange, onPlayerRemov
                         <th className="px-2 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider text-center w-10">#</th>
                         <th className="px-1.5 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider text-center w-14">Nro</th>
                         <th className="px-1.5 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider text-left">Nombre</th>
-                        <th className="px-1.5 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider text-center w-20">Pos</th>
-                        <th className="px-1.5 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider text-center w-20 hidden sm:table-cell">Alt.</th>
+                        <th className="px-1.5 py-3 text-center w-24">
+                            <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Pos</div>
+                            <div className="text-[9px] text-slate-600 font-normal">1·Arq 2-4,6·Def 5,7,8,10·Med 9,11·Del</div>
+                        </th>
+                        <th className="px-1.5 py-3 text-center w-24 hidden sm:table-cell">
+                            <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Alt.</div>
+                        </th>
                         <th className="px-2 py-3 text-center w-24">
                             <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Cal</div>
                             <div className="text-[10px] text-slate-600 font-normal">(1 min - 10 max)</div>
