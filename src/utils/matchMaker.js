@@ -18,7 +18,7 @@ export const generateMatches = (players) => {
     const getScore = (p) => (p.quality || 5) * 0.7 + (p.responsibility || 3) * 0.3;
 
     // Crear pools por posición
-    const pools = { ARQ: [], DEF: [], MED: [], DEL: [], POLI: [] };
+    const pools = { ARQ: [], CEN: [], LAT: [], MED: [], VOL: [], DEL: [], POLI: [] };
     fieldPlayers.forEach(p => {
         const pos = pools[p.position] ? p.position : 'POLI';
         pools[pos].push(p);
@@ -28,7 +28,7 @@ export const generateMatches = (players) => {
     const teamB = [];
 
     // Distribuir por pools con serpentina individual
-    const order = ['ARQ', 'DEL', 'DEF', 'MED', 'POLI'];
+    const order = ['ARQ', 'CEN', 'DEL', 'MED', 'VOL', 'LAT', 'POLI'];
 
     order.forEach((role, poolIndex) => {
         const sortedPool = pools[role].sort((a, b) => getScore(b) - getScore(a));

@@ -86,9 +86,11 @@ export default function DraggablePlayer({ player, id, isEditMode, onClick, onCap
                 {!player.vacante && (
                     <span className={`text-[8px] font-black uppercase tracking-[0.15em] mt-0.5
                         ${player.role === 'ARQ' ? 'text-yellow-500' :
-                            player.role === 'DEF' ? 'text-blue-400' :
-                                player.role === 'MED' ? 'text-emerald-400' :
-                                    player.role === 'DEL' ? 'text-rose-400' : 'text-slate-500'}
+                            player.role === 'CEN' ? 'text-blue-400' :
+                                player.role === 'LAT' ? 'text-sky-400' :
+                                    player.role === 'MED' ? 'text-emerald-400' :
+                                        player.role === 'VOL' ? 'text-teal-400' :
+                                            player.role === 'DEL' ? 'text-rose-400' : 'text-slate-500'}
                     `}>
                         {player.position || player.role}
                     </span>

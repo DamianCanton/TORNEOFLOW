@@ -2,10 +2,10 @@ import { SLOT_FILL_PRIORITY, isPositionCompatible } from './positionUtils';
 
 const FORMATION = [
     { role: 'ARQ', top: '88%', left: '50%' },
-    { role: 'DEF', top: '70%', left: '15%' }, { role: 'DEF', top: '75%', left: '38%' },
-    { role: 'DEF', top: '75%', left: '62%' }, { role: 'DEF', top: '70%', left: '85%' },
-    { role: 'MED', top: '45%', left: '15%' }, { role: 'MED', top: '50%', left: '38%' },
-    { role: 'MED', top: '50%', left: '62%' }, { role: 'MED', top: '45%', left: '85%' },
+    { role: 'LAT', top: '70%', left: '15%' }, { role: 'CEN', top: '75%', left: '38%' },
+    { role: 'CEN', top: '75%', left: '62%' }, { role: 'LAT', top: '70%', left: '85%' },
+    { role: 'VOL', top: '45%', left: '15%' }, { role: 'MED', top: '50%', left: '38%' },
+    { role: 'MED', top: '50%', left: '62%' }, { role: 'VOL', top: '45%', left: '85%' },
     { role: 'DEL', top: '15%', left: '35%' }, { role: 'DEL', top: '15%', left: '65%' }
 ];
 
@@ -60,15 +60,15 @@ export const generateTournament = (allPlayers, options = {}) => {
 
     const getScore = (p) => (p.quality || 5) * 0.7 + (p.responsibility || 3) * 0.3;
 
-    const pools = { ARQ: [], DEF: [], MED: [], DEL: [], POLI: [] };
+    const pools = { ARQ: [], CEN: [], LAT: [], MED: [], VOL: [], DEL: [], POLI: [] };
     players.forEach(p => {
         const pos = pools[p.position] ? p.position : 'POLI';
         pools[pos].push(p);
     });
 
     // ============ FASE 1: DISTRIBUCIÓN BASADA EN NECESIDADES ============
-    const FORMATION_NEEDS = { ARQ: 1, DEF: 4, MED: 4, DEL: 2 };
-    const positionOrder = ['ARQ', 'DEF', 'MED', 'DEL'];
+    const FORMATION_NEEDS = { ARQ: 1, CEN: 2, LAT: 2, MED: 2, VOL: 2, DEL: 2 };
+    const positionOrder = ['ARQ', 'CEN', 'DEL', 'MED', 'VOL', 'LAT'];
 
     // Necesidades pendientes por equipo por posición
     const teamNeeds = teams.map(() => ({ ...FORMATION_NEEDS }));
@@ -174,10 +174,25 @@ export const generateTournament = (allPlayers, options = {}) => {
 
     teams.forEach(team => {
         const squad = [...team.players];
-        FORMATION.forEach(slot => {
+        const starters = new Array(FORMATION.length).fill(null);
+
+        // ============ PASADA 1: match exacto (role === slot.role) ============
+        FORMATION.forEach((slot, i) => {
+            const idx = squad.findIndex(p => p.role === slot.role);
+            if (idx !== -1) {
+                const p = squad.splice(idx, 1)[0];
+                const outOfPosition = !isPositionCompatible(p.position, slot.role, p.altPosition);
+                starters[i] = { ...p, ...slot, isOutOfPosition: outOfPosition };
+            }
+        });
+
+        // ============ PASADA 2: fallback para slots vacíos ============
+        FORMATION.forEach((slot, i) => {
+            if (starters[i]) return;
+
             let foundIdx = -1;
 
-            // Buscar por prioridad: match exacto → POLI
+            // Buscar por prioridad con cross-fallback
             const priorities = SLOT_FILL_PRIORITY[slot.role] || [slot.role, 'POLI'];
             for (const candidateRole of priorities) {
                 foundIdx = squad.findIndex(p => p.role === candidateRole);
@@ -201,16 +216,18 @@ export const generateTournament = (allPlayers, options = {}) => {
             if (foundIdx !== -1) {
                 const p = squad.splice(foundIdx, 1)[0];
                 const outOfPosition = !isPositionCompatible(p.position, slot.role, p.altPosition);
-                team.starters.push({ ...p, ...slot, isOutOfPosition: outOfPosition });
+                starters[i] = { ...p, ...slot, isOutOfPosition: outOfPosition };
             } else {
-                team.starters.push({
+                starters[i] = {
                     name: 'FALTA UNO',
                     vacante: true,
                     id: `vacante-${team.id}-${slot.role}`,
                     ...slot
-                });
+                };
             }
         });
+
+        team.starters = starters;
         team.bench = squad;
 
         const allTeamPlayers = [...team.players, ...team.bench];  // stats antes de SUPL

@@ -402,7 +402,7 @@ Estado:
 ```
 Input:  21 jugadores
 Decisión: 21 < 22 → NO genera torneo
-Output: Redirige a EDITOR (edición manual)
+Output: No se puede crear Torneo
 ```
 
 ### 6.3 Caso: N = 36 (Límite Superior de 2 Equipos)

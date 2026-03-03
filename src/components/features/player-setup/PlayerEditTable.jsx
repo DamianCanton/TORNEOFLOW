@@ -11,7 +11,7 @@ export default function PlayerEditTable({ players, onPlayerChange, onPlayerRemov
                         <th className="px-1.5 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider text-left">Nombre</th>
                         <th className="px-1.5 py-3 text-center w-24">
                             <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Pos</div>
-                            <div className="text-[9px] text-slate-600 font-normal">1·Arq 2-4,6·Def 5,7,8,10·Med 9,11·Del</div>
+                            <div className="text-[9px] text-slate-600 font-normal">1·Arq 2,6·Cen 3,4·Lat 5,8·Med 7,10·Vol 9,11·Del</div>
                         </th>
                         <th className="px-1.5 py-3 text-center w-24 hidden sm:table-cell">
                             <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Alt.</div>

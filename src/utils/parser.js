@@ -1,8 +1,10 @@
 // Mapeo de posición numérica (1-11) a posición del sistema
 export const NUMERIC_POSITION_MAP = {
     1:  'ARQ',
-    2:  'DEF', 3: 'DEF', 4: 'DEF', 6: 'DEF',
-    5:  'MED', 7: 'MED', 8: 'MED', 10: 'MED',
+    2:  'CEN', 6: 'CEN',
+    3:  'LAT', 4: 'LAT',
+    5:  'MED', 8: 'MED',
+    7:  'VOL', 10: 'VOL',
     9:  'DEL', 11: 'DEL'
 };
 
@@ -60,8 +62,10 @@ export const normalizePosition = (rawPos) => {
     // Mapeo de alias completos (palabras en español e inglés)
     const aliases = {
         'ARQUERO': 'ARQ', 'PORTERO': 'ARQ', 'GOALKEEPER': 'ARQ', 'GK': 'ARQ',
-        'DEFENSOR': 'DEF', 'DEFENSA': 'DEF', 'CENTRAL': 'DEF', 'LATERAL': 'DEF', 'ZAGUERO': 'DEF',
-        'MEDIOCAMPISTA': 'MED', 'MEDIO': 'MED', 'VOLANTE': 'MED', 'CENTROCAMPISTA': 'MED',
+        'CENTRAL': 'CEN', 'ZAGUERO': 'CEN', 'DEFENSOR': 'CEN', 'DEFENSA': 'CEN', 'DEF': 'CEN',
+        'LATERAL': 'LAT',
+        'MEDIOCAMPISTA': 'MED', 'MEDIO': 'MED',
+        'VOLANTE': 'VOL', 'CENTROCAMPISTA': 'VOL',
         'DELANTERO': 'DEL', 'ATACANTE': 'DEL', 'PUNTA': 'DEL', 'FORWARD': 'DEL',
         'POLIVALENTE': 'POLI', 'POLIFUNCIONAL': 'POLI', 'COMODIN': 'POLI',
         'SUPLENTE': 'SUPL', 'SUPL': 'SUPL', 'SUPL.': 'SUPL', 'SUB': 'SUPL'
@@ -77,8 +81,10 @@ export const normalizePosition = (rawPos) => {
     // DT
     if (clean === 'DT' || clean.startsWith('DIR')) return 'DT';
 
-    const valid = ['ARQ', 'MED', 'DEL', 'DEF'];
-    if (clean.substring(0, 3) === 'LAT') return 'DEF';
-    if (clean.substring(0, 3) === 'VOL') return 'MED';
+    const valid = ['ARQ', 'CEN', 'LAT', 'MED', 'VOL', 'DEL'];
+    if (clean.substring(0, 3) === 'LAT') return 'LAT';
+    if (clean.substring(0, 3) === 'VOL') return 'VOL';
+    if (clean.substring(0, 3) === 'CEN') return 'CEN';
+    if (clean.substring(0, 3) === 'DEF') return 'CEN';
     return valid.includes(clean.substring(0, 3)) ? clean.substring(0, 3) : 'POLI';
 };

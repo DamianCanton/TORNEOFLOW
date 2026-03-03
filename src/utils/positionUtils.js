@@ -7,7 +7,9 @@ export const isPositionCompatible = (playerPosition, slotRole, altPosition = nul
 
 export const SLOT_FILL_PRIORITY = {
     ARQ: ['ARQ', 'POLI'],
-    DEF: ['DEF', 'POLI'],
-    MED: ['MED', 'POLI'],
-    DEL: ['DEL', 'POLI'],
+    CEN: ['CEN', 'LAT', 'POLI'],
+    LAT: ['LAT', 'CEN', 'POLI'],
+    MED: ['MED', 'VOL', 'POLI'],
+    VOL: ['VOL', 'MED', 'POLI'],
+    DEL: ['DEL', 'VOL', 'POLI'],
 };

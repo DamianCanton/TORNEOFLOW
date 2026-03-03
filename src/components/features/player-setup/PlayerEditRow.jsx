@@ -3,14 +3,14 @@ import { Trash2 } from 'lucide-react';
 const POSITION_LABELS = ['1','2','3','4','5','6','7','8','9','10','11','Poli','DT','Supl'];
 
 const LABEL_TO_CODE = {
-    '1':'ARQ', '2':'DEF', '3':'DEF', '4':'DEF',
-    '5':'MED', '6':'DEF', '7':'MED', '8':'MED',
-    '9':'DEL', '10':'MED', '11':'DEL',
+    '1':'ARQ', '2':'CEN', '6':'CEN', '3':'LAT', '4':'LAT',
+    '5':'MED', '8':'MED', '7':'VOL', '10':'VOL',
+    '9':'DEL', '11':'DEL',
     'Poli':'POLI', 'DT':'DT', 'Supl':'SUPL',
 };
 
 const CODE_TO_LABEL = {
-    'ARQ':'1', 'DEF':'2', 'MED':'5', 'DEL':'9',
+    'ARQ':'1', 'CEN':'2', 'LAT':'3', 'MED':'5', 'VOL':'7', 'DEL':'9',
     'POLI':'Poli', 'DT':'DT', 'SUPL':'Supl',
 };
 
